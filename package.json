@@ -1,0 +1,26 @@
+{
+  "name": "vue-i18n-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "i18n-cli": "./index.js"
+  },
+  "scripts": {
+    "start": "nodemon --exec babel-node ./index.js toexcel ./demo/index.js",
+    "build": "babel src -d lib"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^8.2.0",
+    "node-xlsx": "^0.17.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.8",
+    "@babel/node": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "nodemon": "^2.0.14"
+  }
+}
