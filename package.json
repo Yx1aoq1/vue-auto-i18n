@@ -1,16 +1,15 @@
 {
   "name": "vue-i18n-cli",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "将vue-i18n文件导出为excel",
   "bin": {
-    "i18n-cli": "./index.js"
+    "i18n-cli": "bin/index"
   },
   "scripts": {
     "start": "nodemon --exec babel-node ./index.js toexcel ./test",
     "build": "babel src -d lib"
   },
-  "author": "",
+  "author": "yanx1aoq1995@gmail.com",
   "license": "ISC",
   "dependencies": {
     "commander": "^8.2.0",
@@ -22,5 +21,8 @@
     "@babel/node": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
     "nodemon": "^2.0.14"
+  },
+  "engines": {
+    "node": ">=8.10.0"
   }
 }
