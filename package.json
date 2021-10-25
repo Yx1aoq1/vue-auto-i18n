@@ -3,26 +3,29 @@
   "version": "1.0.0",
   "description": "将vue-i18n文件导出为excel",
   "bin": {
-    "i18n-cli": "bin/index"
+    "i18n-cli": "bin/index.js"
   },
   "scripts": {
-    "start": "nodemon --exec babel-node ./index.js toexcel ./test",
+    "start": "nodemon --exec babel-node ./index.js toexcel ./demo",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",
   "license": "ISC",
   "dependencies": {
+    "@babel/runtime-corejs3": "^7.15.4",
     "commander": "^8.2.0",
+    "core-js": "^3.18.3",
     "node-xlsx": "^0.17.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
     "@babel/core": "^7.15.8",
     "@babel/node": "^7.15.8",
+    "@babel/plugin-transform-runtime": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
     "nodemon": "^2.0.14"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=14.17.6"
   }
 }

@@ -1,4 +1,5 @@
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import xlsx from 'node-xlsx'
 /**
@@ -35,8 +36,19 @@ function getExtname (path) {
   }
 }
 
+function readESModuleFile (filePath) {
+  const content = fs.readFileSync(filePath, 'utf-8')
+  const tempPath = path.join(process.cwd(), './temp.js')
+  // 由于运行时不允许es6语法，只能替换一下再重新读取
+  fs.writeFileSync(tempPath, content.replace('export default', 'exports.default ='), { flag: 'w' })
+  const i18n = require(tempPath).default
+  // 删除文件
+  fs.unlinkSync(tempPath)
+  return i18n
+}
+
 function generateExcelData (filePath, filename) {
-  const i18n = require(filePath).default
+  const i18n = readESModuleFile(filePath)
   const flatI18n = flat(i18n)
   const data = [
     ['key', '中文', '英文翻译']
