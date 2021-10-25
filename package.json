@@ -7,7 +7,7 @@
     "i18n-cli": "./index.js"
   },
   "scripts": {
-    "start": "nodemon --exec babel-node ./index.js toexcel ./demo/index.js",
+    "start": "nodemon --exec babel-node ./index.js toexcel ./test",
     "build": "babel src -d lib"
   },
   "author": "",

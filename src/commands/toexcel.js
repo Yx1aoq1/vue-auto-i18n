@@ -24,37 +24,86 @@ function flat (obj, key = '', res = {}, isArray = false) {
 	return res
 }
 
+function getExtname (path) {
+  const files = path.split(/\/|\\/)
+  const filename = files.length ? files[files.length - 1] : ''
+  const filenameWithoutSuffix = filename.split(/#|\?/)[0]
+  const extname = (/[^./\\]*$/.exec(filenameWithoutSuffix) || [''])[0]
+  return {
+    name: filenameWithoutSuffix.split('.')[0],
+    extname
+  }
+}
+
+function generateExcelData (filePath, filename) {
+  const i18n = require(filePath).default
+  const flatI18n = flat(i18n)
+  const data = [
+    ['key', '中文', '英文翻译']
+  ]
+  Object.keys(flatI18n).map(key => {
+    const value = flatI18n[key]
+    // key拼接文件名称
+    data.push([`${filename}.${key}`, value])
+  })
+  return data
+}
+
+function ensureDirectoryExistence(filePath) {
+  var dirname = path.dirname(filePath)
+  if (fs.existsSync(dirname)) {
+    return true
+  }
+  ensureDirectoryExistence(dirname)
+  fs.mkdirSync(dirname)
+}
+
 export default function toexcel (program) {
 	program
-		.command('toexcel <jspath>')
+		.command('toexcel <jspath> [filename] [path]')
 		.description('将i18n文件转成excel')
-		.option('-f, --filename <filename>', '指定导出的excel文件名')
-		.option('-d, --dir <path>', '指定导出的excel保存位置')
-		.action((jspath, options) => {
+		.action((jspath, exportName, exportPath) => {
       const fullPath = path.join(process.cwd(), jspath)
       fs.access(fullPath, fs.constants.F_OK, (err) => {
         if (err) {
-          console.error(`${fullPath}文件不存在`)
+          console.error(`${fullPath}文件或目录不存在`)
           process.exit()
         } else {
-          const i18n = require(fullPath).default
-          const flatI18n = flat(i18n)
-          const excelData = [
-            ['key', '中文', '英文翻译']
-          ]
-          Object.keys(flatI18n).map(key => {
-            const value = flatI18n[key]
-            excelData.push([key, value])
-          })
-
-          const buffer = xlsx.build([
-            {
-              name: 'sheet1',
-              data: excelData
-            }
-          ])
-          // 如果文件存在，覆盖
-          fs.writeFileSync('test.xlsx', buffer, { flag: 'w' })
+          const buildDatas = []
+          const { name, extname } = getExtname(fullPath)
+          // 单文件处理
+          if (extname === 'js') {
+            const data = generateExcelData(fullPath, name)
+            buildDatas.push({
+              name,
+              data
+            })
+          } else {
+            // 文件夹处理
+            fs.readdirSync(fullPath)
+              .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
+              .forEach(filename => {
+                const filePath = path.join(fullPath, './' + filename)
+                const { name } = getExtname(filename)
+                const data = generateExcelData(filePath, name)
+                buildDatas.push({
+                  name: filename,
+                  data
+                })
+              })
+          }
+          
+          if (buildDatas.length) {
+            const buffer = xlsx.build(buildDatas)
+            const exportFilePath = path.join(exportPath || '', `${exportName || 'translate'}.xlsx`)
+            // 确保目录存在
+            ensureDirectoryExistence(exportFilePath)
+            // 如果文件存在，覆盖
+            fs.writeFileSync(exportFilePath, buffer, { flag: 'w' })
+            console.log('成功导出excel')
+          } else {
+            console.error('没有可以导出的内容')
+          }
         }
       })
 		})
