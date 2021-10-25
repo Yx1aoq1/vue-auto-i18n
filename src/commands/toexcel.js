@@ -2,6 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import xlsx from 'node-xlsx'
+import { getExtname, getFilenameWithoutExt } from '../utils'
 /**
  * 对象扁平化处理
  * @param {*} obj 
@@ -23,17 +24,6 @@ function flat (obj, key = '', res = {}, isArray = false) {
 		}
 	}
 	return res
-}
-
-function getExtname (path) {
-  const files = path.split(/\/|\\/)
-  const filename = files.length ? files[files.length - 1] : ''
-  const filenameWithoutSuffix = filename.split(/#|\?/)[0]
-  const extname = (/[^./\\]*$/.exec(filenameWithoutSuffix) || [''])[0]
-  return {
-    name: filenameWithoutSuffix.split('.')[0],
-    extname
-  }
 }
 
 function readESModuleFile (filePath) {
@@ -74,7 +64,7 @@ export default function toexcel (program) {
 	program
 		.command('toexcel <jspath> [filename] [path]')
 		.description('将i18n文件转成excel')
-		.action((jspath, exportName, exportPath) => {
+		.action((jspath, exportName = 'translate', exportPath = '') => {
       const fullPath = path.join(process.cwd(), jspath)
       fs.access(fullPath, fs.constants.F_OK, (err) => {
         if (err) {
@@ -82,9 +72,10 @@ export default function toexcel (program) {
           process.exit()
         } else {
           const buildDatas = []
-          const { name, extname } = getExtname(fullPath)
+          const extname = getExtname(fullPath)
           // 单文件处理
           if (extname === 'js') {
+            const name = getFilenameWithoutExt(fullPath)
             const data = generateExcelData(fullPath, name)
             buildDatas.push({
               name,
@@ -96,7 +87,7 @@ export default function toexcel (program) {
               .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
               .forEach(filename => {
                 const filePath = path.join(fullPath, './' + filename)
-                const { name } = getExtname(filename)
+                const name = getFilenameWithoutExt(fullPath)
                 const data = generateExcelData(filePath, name)
                 buildDatas.push({
                   name: filename,
@@ -107,7 +98,7 @@ export default function toexcel (program) {
           
           if (buildDatas.length) {
             const buffer = xlsx.build(buildDatas)
-            const exportFilePath = path.join(exportPath || '', `${exportName || 'translate'}.xlsx`)
+            const exportFilePath = path.join(exportPath, `${exportName}.xlsx`)
             // 确保目录存在
             ensureDirectoryExistence(exportFilePath)
             // 如果文件存在，覆盖

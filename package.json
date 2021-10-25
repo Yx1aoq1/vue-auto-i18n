@@ -6,7 +6,7 @@
     "i18n-cli": "bin/index.js"
   },
   "scripts": {
-    "start": "nodemon --exec babel-node ./index.js toexcel ./demo",
+    "start": "nodemon --exec babel-node ./index.js getlang ./demo/vueTemp",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",
