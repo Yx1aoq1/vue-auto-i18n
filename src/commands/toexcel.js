@@ -28,7 +28,7 @@ function flat (obj, key = '', res = {}, isArray = false) {
 
 function readESModuleFile (filePath) {
   const content = fs.readFileSync(filePath, 'utf-8')
-  const tempPath = path.join(os.tmpdir(), './temp.js')
+  const tempPath = path.join(os.tmpdir(), `./temp${+new Date()}.js`)
   // 由于运行时不允许es6语法，只能替换一下再重新读取
   fs.writeFileSync(tempPath, content.replace('export default', 'exports.default ='), { flag: 'w' })
   const i18n = require(tempPath).default
@@ -37,16 +37,17 @@ function readESModuleFile (filePath) {
   return i18n
 }
 
-function generateExcelData (filePath, filename) {
-  const i18n = readESModuleFile(filePath)
-  const flatI18n = flat(i18n)
+function generateExcelData (zhPath, enPath, filename) {
+  const flatZhI18n = flat(readESModuleFile(zhPath))
+  const flatEnI18n = enPath ? flat(readESModuleFile(enPath) || {}) : {}
   const data = [
     ['key', '中文', '英文翻译']
   ]
-  Object.keys(flatI18n).map(key => {
-    const value = flatI18n[key]
+  Object.keys(flatZhI18n).map(key => {
+    const zh = flatZhI18n[key]
+    const en = flatEnI18n[key] || ''
     // key拼接文件名称
-    data.push([`${filename}.${key}`, value])
+    data.push([`${filename}.${key}`, zh, en])
   })
   return data
 }
@@ -62,33 +63,36 @@ function ensureDirectoryExistence(filePath) {
 
 export default function toexcel (program) {
 	program
-		.command('toexcel <jspath> [filename] [path]')
+    .command('toexcel <jspath> [filename] [path]')
+    .option('-t, --translate <translatePath>', '已翻译好的i18n文件，将翻译填充进excel')
 		.description('将i18n文件转成excel')
-		.action((jspath, exportName = 'translate', exportPath = '') => {
-      const fullPath = path.join(process.cwd(), jspath)
-      fs.access(fullPath, fs.constants.F_OK, (err) => {
+		.action((jspath, exportName = 'translate', exportPath = '', { translate }) => {
+      const zhPath = path.join(process.cwd(), jspath)
+      const enPath = translate ? path.join(process.cwd(), translate) : null
+      fs.access(zhPath, fs.constants.F_OK, (err) => {
         if (err) {
-          console.error(`${fullPath}文件或目录不存在`)
+          console.error(`${zhPath}文件或目录不存在`)
           process.exit()
         } else {
           const buildDatas = []
-          const extname = getExtname(fullPath)
+          const extname = getExtname(zhPath)
           // 单文件处理
           if (extname === 'js') {
-            const name = getFilenameWithoutExt(fullPath)
-            const data = generateExcelData(fullPath, name)
+            const name = getFilenameWithoutExt(zhPath)
+            const data = generateExcelData(zhPath, enPath, name)
             buildDatas.push({
               name,
               data
             })
           } else {
             // 文件夹处理
-            fs.readdirSync(fullPath)
+            fs.readdirSync(zhPath)
               .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
               .forEach(filename => {
-                const filePath = path.join(fullPath, './' + filename)
-                const name = getFilenameWithoutExt(fullPath)
-                const data = generateExcelData(filePath, name)
+                const zhFilePath = path.join(zhPath, './' + filename)
+                const enFilePath = enPath ? path.join(enPath, './' + filename) : null
+                const name = getFilenameWithoutExt(zhPath)
+                const data = generateExcelData(zhFilePath, enFilePath, name)
                 buildDatas.push({
                   name: filename,
                   data
