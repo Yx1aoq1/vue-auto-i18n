@@ -2,29 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import xlsx from 'node-xlsx'
-import { getExtname, getFilenameWithoutExt } from '../utils'
-/**
- * 对象扁平化处理
- * @param {*} obj 
- * @param {*} key 
- * @param {*} res 
- * @param {*} isArray 
- */
-function flat (obj, key = '', res = {}, isArray = false) {
-	for (let [ k, v ] of Object.entries(obj)) {
-		if (Array.isArray(v)) {
-			let tmp = isArray ? key + '[' + k + ']' : key + k
-			flat(v, tmp, res, true)
-		} else if (typeof v === 'object') {
-			let tmp = isArray ? key + '[' + k + '].' : key + k + '.'
-			flat(v, tmp, res)
-		} else {
-			let tmp = isArray ? key + '[' + k + ']' : key + k
-			res[tmp] = v
-		}
-	}
-	return res
-}
+import { getExtname, getFilenameWithoutExt, isChineseChar, flat } from '../utils'
 
 function readESModuleFile (filePath) {
   const content = fs.readFileSync(filePath, 'utf-8')
@@ -47,7 +25,7 @@ function generateExcelData (zhPath, enPath, filename) {
     const zh = flatZhI18n[key]
     const en = flatEnI18n[key] || ''
     // key拼接文件名称
-    data.push([`${filename}.${key}`, zh, en])
+    data.push([`${filename}.${key}`, zh, isChineseChar(en) ? '' : en])
   })
   return data
 }
@@ -91,7 +69,7 @@ export default function toexcel (program) {
               .forEach(filename => {
                 const zhFilePath = path.join(zhPath, './' + filename)
                 const enFilePath = enPath ? path.join(enPath, './' + filename) : null
-                const name = getFilenameWithoutExt(zhPath)
+                const name = getFilenameWithoutExt(filename)
                 const data = generateExcelData(zhFilePath, enFilePath, name)
                 buildDatas.push({
                   name: filename,

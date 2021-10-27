@@ -4,7 +4,6 @@ import readline from 'readline'
 import { getExtname, getFilenameWithoutExt } from '../utils'
 
 const CHINESE_REG = /[\u4E00-\u9FA5\uF900-\uFA2D]+[\u4E00-\u9FA5\uF900-\uFA2D\uff01\uff08-\uff1f\u3001-\u3015\u0020a-zA-Z\d\\\/+*/-]*/
-const lang = {}
 /**
  * 遍历文件夹
  */
@@ -31,10 +30,12 @@ function isDirectory (filepath) {
 }
 
 function handleCode (filepath) {
+  const zhs = []
   return new Promise ((resolve, reject) => {
     const rl = readline.createInterface({
       input: fs.createReadStream(filepath)
     })
+    const key = filepath
     let isNote = false
     rl.on('line', line => {
       // console.log('line:', line)
@@ -61,8 +62,14 @@ function handleCode (filepath) {
       }
       if (isNote && !content) return
       if (line.includes('//')) content = line.slice(0, line.indexOf('//'))
-      let str = content.match(CHINESE_REG)
-      console.log('str:', str)
+      const matchs = content.match(CHINESE_REG)
+      let str = matchs ? matchs[0] : ''
+      if (str) {
+        zhs.push(str)
+      }
+    })
+    rl.on('close', () => {
+      resolve(zhs)
     })
   })
 }
@@ -71,16 +78,29 @@ export default function getlang (program) {
   program
     .command('getlang <src>')
     .description('对<src>目录下的.vue .js 文件进行中文收集')
+    .option('-d, --dir <exportDir>', '输出文件位置')
     .option('-f, --filename <filename>', '输出文件名称')
     .option('-i, --ignore <dir>', '需要忽略的文件或文件夹', value => {
       return value.split(',')
     })
-    .action((src, { filename, ignore = [] }) => {
+    .action(async (src, { dir = '.', filename = 'zh', ignore = [] }) => {
+      const fileList = []
       travelDir(src, ignore, (filepath) => {
         const extname = getExtname(filepath)
         if (['vue', 'js'].includes(extname)) {
-          handleCode(filepath)
+          fileList.push(filepath)
         }
       })
+      const lang = {}
+      for (const filepath of fileList) {
+        const zhs = await handleCode(filepath)
+        lang[filepath] = zhs.reduce((res, cur, idx) => {
+          res[`trans_${idx}`] = cur
+          return res
+        }, {})
+      }
+      console.log(lang)
+      const transPath = path.join(process.cwd(), `${dir}/${filename}.json`)
+      fs.writeFileSync(transPath, JSON.stringify(lang, null, 2), { flag: 'w' })
     })
 }
