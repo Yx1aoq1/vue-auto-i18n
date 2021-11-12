@@ -3,7 +3,7 @@ import path from 'path'
 import readline from 'readline'
 import { getExtname, getFilenameWithoutExt } from '../utils'
 
-const CHINESE_REG = /[\u4E00-\u9FA5\uF900-\uFA2D]+[\u4E00-\u9FA5\uF900-\uFA2D\uff01\uff08-\uff1f\u3001-\u3015\u0020a-zA-Z\d\\\/+*/-]*/
+const CHINESE_REG = /[A-Za-z0-9]*[^\x00-\xff][A-Za-z0-9]*/g
 /**
  * 遍历文件夹
  */

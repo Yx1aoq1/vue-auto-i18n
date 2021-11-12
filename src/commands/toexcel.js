@@ -2,11 +2,11 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import xlsx from 'node-xlsx'
-import { getExtname, getFilenameWithoutExt, isChineseChar, flat } from '../utils'
+import { getExtname, getFilenameWithoutExt, isChineseChar, flat, getRandomStr } from '../utils'
 
 function readESModuleFile (filePath) {
   const content = fs.readFileSync(filePath, 'utf-8')
-  const tempPath = path.join(os.tmpdir(), `./temp${+new Date()}.js`)
+  const tempPath = path.join(os.tmpdir(), `./temp${getRandomStr()}.js`)
   // 由于运行时不允许es6语法，只能替换一下再重新读取
   fs.writeFileSync(tempPath, content.replace('export default', 'exports.default ='), { flag: 'w' })
   const i18n = require(tempPath).default

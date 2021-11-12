@@ -40,3 +40,7 @@ export function flat (obj, key = '', res = {}, isArray = false) {
 	}
 	return res
 }
+
+export function getRandomStr () {
+	return Math.random().toString(36).slice(2)
+}
