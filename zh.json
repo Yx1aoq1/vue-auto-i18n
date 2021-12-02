@@ -1,17 +1,16 @@
 {
   "demo\\vueTemp\\index.vue": {
-    "trans_0": "纯",
-    "trans_1": "中",
-    "trans_2": "属",
-    "trans_3": "属",
-    "trans_4": "不",
-    "trans_5": "测",
-    "trans_6": "测"
+    "m2h2pnkhfph": "纯文字替换",
+    "qf30fzb8qwa": "中文+变量显示：{value}",
+    "k8wyep3y06l": "属性纯中文",
+    "zirxs30vr2m": "属性中文带变量{value}",
+    "dh2ma29rpzm": "不能为空",
+    "rzke2ekg1qk": "测试定义变量中文",
+    "3mgezpraxpi": "中文数组2",
+    "qieer0yt0j": "中文数组1"
   },
   "demo\\vueTemp\\js\\demo.js": {
-    "trans_0": "测",
-    "trans_1": "测",
-    "trans_2": "测",
-    "trans_3": "测"
+    "j2brnfb91h": "测试中文匹配3",
+    "i9et3p75o3o": "测试中文匹配4"
   }
 }

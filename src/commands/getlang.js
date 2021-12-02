@@ -1,9 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
-import { getExtname, getFilenameWithoutExt } from '../utils'
+import { getExtname, getRandomStr } from '../utils'
 
-const CHINESE_REG = /[A-Za-z0-9]*[^\x00-\xff][A-Za-z0-9]*/g
+const CHINESE_REG = /[^\x00-\xff]+[^\<\>\"\'\`]*/g
+const VARIABLE_REG = /\$?\{?\{([a-zA-Z][a-zA-Z\d]*)\}?\}/g
+const CONSOLE_REG = /console\.log\(.*\)/g
 /**
  * 遍历文件夹
  */
@@ -35,11 +37,9 @@ function handleCode (filepath) {
     const rl = readline.createInterface({
       input: fs.createReadStream(filepath)
     })
-    const key = filepath
     let isNote = false
     rl.on('line', line => {
-      // console.log('line:', line)
-      let content = isNote ? '' : line
+      let content = isNote ? '' : line.replace(CONSOLE_REG, '')
       if (line.includes('/*')) {
         isNote = true
         content = line.slice(0, line.indexOf('/*'))
@@ -63,9 +63,11 @@ function handleCode (filepath) {
       if (isNote && !content) return
       if (line.includes('//')) content = line.slice(0, line.indexOf('//'))
       const matchs = content.match(CHINESE_REG)
-      let str = matchs ? matchs[0] : ''
-      if (str) {
-        zhs.push(str)
+      while (matchs && matchs.length) {
+        const str = matchs.pop().replace(VARIABLE_REG, '{$1}')
+        if (!zhs.includes(str)) {
+          zhs.push(str)
+        }
       }
     })
     rl.on('close', () => {
@@ -95,7 +97,7 @@ export default function getlang (program) {
       for (const filepath of fileList) {
         const zhs = await handleCode(filepath)
         lang[filepath] = zhs.reduce((res, cur, idx) => {
-          res[`trans_${idx}`] = cur
+          res[getRandomStr()] = cur
           return res
         }, {})
       }

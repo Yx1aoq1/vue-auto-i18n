@@ -23,7 +23,8 @@ export default {
   data () {
     return {
       value: 123,
-      text: '测试定义变量中文'
+      text: '测试定义变量中文',
+      array: ['中文数组1', '中文数组2']
     }
   },
   created () {
