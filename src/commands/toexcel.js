@@ -2,7 +2,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import xlsx from 'node-xlsx'
-import { getExtname, getFilenameWithoutExt, isChineseChar, flat, getRandomStr } from '../utils'
+import getConfig from '../utils/config'
+import { isObject, getExtname, getFilenameWithoutExt, isChineseChar, flat, getRandomStr } from '../utils/common'
 
 function readESModuleFile (filePath) {
   const content = fs.readFileSync(filePath, 'utf-8')
@@ -15,17 +16,29 @@ function readESModuleFile (filePath) {
   return i18n
 }
 
-function generateExcelData (zhPath, enPath, filename) {
-  const flatZhI18n = flat(readESModuleFile(zhPath))
-  const flatEnI18n = enPath ? flat(readESModuleFile(enPath) || {}) : {}
+function generateExcelData (cfg, filename, languagePath) {
+  const cols = ['key']
+  const flatI18n = {}
+  const execelCols = cfg.execelCols || DEFAULT_EXCEL_COLS
+  const langs = Object.keys(languagePath)
+  langs.map(lang => {
+    cols.push(execelCols[lang])
+    logger.info(lang, languagePath[lang])
+    flatI18n[lang] = flat(readESModuleFile(languagePath[lang]))
+  })
   const data = [
-    ['key', '中文', '英文翻译']
+    cols
   ]
-  Object.keys(flatZhI18n).map(key => {
-    const zh = flatZhI18n[key]
-    const en = flatEnI18n[key] || ''
-    // key拼接文件名称
-    data.push([`${filename}.${key}`, zh, isChineseChar(en) ? '' : en])
+  Object.keys(flatI18n['zh-cn'] || flatI18n[langs[0]]).map(key => {
+    data.push(langs.reduce((res, lang) => {
+      const value = flatI18n[lang][key]
+      if(lang === 'zh-cn') {
+        res.push(value)
+      } else {
+        res.push(isChineseChar(value) ? '': isChineseChar(value))
+      }
+      return res
+    }, [`${filename}.${key}`]))
   })
   return data
 }
@@ -39,56 +52,84 @@ function ensureDirectoryExistence(filePath) {
   fs.mkdirSync(dirname)
 }
 
+function getLanguagePaths (cfg) {
+  const languages = cfg.languages || DEFAULT_LANGUAGES
+  if (typeof cfg.languagePath === 'string') {
+    return languages.reduce((paths, lang) => {
+      paths[lang] = path.resolve(process.cwd(), cfg.languagePath, lang)
+      return paths
+    }, {})
+  }
+  if (isObject(cfg.languagePath)) {
+    const languagePath = { ...cfg.languagePath }
+    Object.keys(languagePath).map(lang => {
+      languagePath[lang] = path.resolve(process.cwd(), languagePath[lang])
+    })
+    return languagePath
+  }
+  return {}
+}
+
 export default function toexcel (program) {
 	program
-    .command('toexcel <jspath> [filename] [path]')
-    .option('-t, --translate <translatePath>', '已翻译好的i18n文件，将翻译填充进excel')
+    .command('toexcel [jspath] [filename] [path]')
 		.description('将i18n文件转成excel')
-		.action((jspath, exportName = 'translate', exportPath = '', { translate }) => {
-      const zhPath = path.join(process.cwd(), jspath)
-      const enPath = translate ? path.join(process.cwd(), translate) : null
-      fs.access(zhPath, fs.constants.F_OK, (err) => {
+		.action((jspath = '', exportName = 'translate', exportPath = '') => {
+      const cfg = getConfig()
+      const langPaths = getLanguagePaths(cfg)
+      const langs = Object.keys(langPaths)
+      logger.info(langPaths)
+      if (!jspath) {
+        jspath = langPaths['zh-cn'] || langPaths[langs[0]]
+      } else {
+        jspath = path.resolve(process.cwd(), jspath)
+      }
+      logger.info(jspath)
+      // 验证目录存在
+      fs.access(jspath, fs.constants.F_OK, err => {
         if (err) {
-          console.error(`${zhPath}文件或目录不存在`)
+          error(`${jspath}文件或目录不存在`, err)
           process.exit()
+        }
+        // 导出execl
+        const buildDatas = []
+        const extname = getExtname(jspath)
+        // 单文件处理
+        if (extname === 'js') {
+          const name = getFilenameWithoutExt(jspath)
+          const data = generateExcelData(cfg, name, {
+            'zh-cn': jspath
+          })
+          buildDatas.push({
+            name,
+            data
+          })
         } else {
-          const buildDatas = []
-          const extname = getExtname(zhPath)
-          // 单文件处理
-          if (extname === 'js') {
-            const name = getFilenameWithoutExt(zhPath)
-            const data = generateExcelData(zhPath, enPath, name)
-            buildDatas.push({
-              name,
-              data
-            })
-          } else {
-            // 文件夹处理
-            fs.readdirSync(zhPath)
-              .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
-              .forEach(filename => {
-                const zhFilePath = path.join(zhPath, './' + filename)
-                const enFilePath = enPath ? path.join(enPath, './' + filename) : null
-                const name = getFilenameWithoutExt(filename)
-                const data = generateExcelData(zhFilePath, enFilePath, name)
-                buildDatas.push({
-                  name: filename,
-                  data
-                })
+          // 文件夹处理
+          fs.readFileSync(jspath)
+            .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
+            .forEach(filename => {
+              const name = getFilenameWithoutExt(filename)
+              const data = generateExcelData(cfg, name, {
+                ...langPaths,
+                'zh-cn': jspath
               })
-          }
-          
-          if (buildDatas.length) {
-            const buffer = xlsx.build(buildDatas)
-            const exportFilePath = path.join(exportPath, `${exportName}.xlsx`)
-            // 确保目录存在
-            ensureDirectoryExistence(exportFilePath)
-            // 如果文件存在，覆盖
-            fs.writeFileSync(exportFilePath, buffer, { flag: 'w' })
-            console.log('成功导出excel')
-          } else {
-            console.error('没有可以导出的内容')
-          }
+              buildDatas.push({
+                name,
+                data
+              })
+            })
+        }
+        if (buildDatas.length) {
+          const buffer = xlsx.build(buildDatas)
+          const exportFilePath = path.join(exportPath, `${exportName}.xlsx`)
+          // 确保目录存在
+          ensureDirectoryExistence(exportFilePath)
+          // 如果文件存在，覆盖
+          fs.writeFileSync(exportFilePath, buffer, { flag: 'w' })
+          logger.success('成功导出excel')
+        } else {
+          logger.warn('没有可以导出的内容')
         }
       })
 		})

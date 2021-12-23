@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
-import { getExtname, getRandomStr } from '../utils'
+import getConfig from '../utils/config'
+import { getExtname, getRandomStr } from '../utils/common'
 
 const CHINESE_REG = /[^\x00-\xff]+[^\<\>\"\'\`]*/g
 const VARIABLE_REG = /\$?\{?\{([a-zA-Z][a-zA-Z\d]*)\}?\}/g
@@ -86,6 +87,7 @@ export default function getlang (program) {
       return value.split(',')
     })
     .action(async (src, { dir = '.', filename = 'zh', ignore = [] }) => {
+      getConfig()
       const fileList = []
       travelDir(src, ignore, (filepath) => {
         const extname = getExtname(filepath)

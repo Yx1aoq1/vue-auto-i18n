@@ -1,3 +1,7 @@
+export function isObject(obj) {
+  return Object.prototype.toString.call(obj) === '[object Object]'
+}
+
 export function getExtname (path) {
   const filenameWithoutSuffix = path.split(/#|\?/)[0]
   return (/[^./\\]*$/.exec(filenameWithoutSuffix) || [''])[0]
@@ -47,3 +51,4 @@ export function flat (obj, key = '', res = {}, isArray = false) {
 export function getRandomStr () {
 	return Math.random().toString(36).slice(2)
 }
+

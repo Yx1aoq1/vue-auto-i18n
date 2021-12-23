@@ -1,16 +1,16 @@
 {
   "demo\\vueTemp\\index.vue": {
-    "m2h2pnkhfph": "纯文字替换",
-    "qf30fzb8qwa": "中文+变量显示：{value}",
-    "k8wyep3y06l": "属性纯中文",
-    "zirxs30vr2m": "属性中文带变量{value}",
-    "dh2ma29rpzm": "不能为空",
-    "rzke2ekg1qk": "测试定义变量中文",
-    "3mgezpraxpi": "中文数组2",
-    "qieer0yt0j": "中文数组1"
+    "38xhgrkzfxq": "纯文字替换",
+    "90pu555n4t6": "中文+变量显示：{value}",
+    "rv5tgoar96": "属性纯中文",
+    "ziv48xng07": "属性中文带变量{value}",
+    "mebaqp0mwh": "不能为空",
+    "l48mgets6rr": "测试定义变量中文",
+    "217d0drrqhi": "中文数组2",
+    "a486z5n65fb": "中文数组1"
   },
   "demo\\vueTemp\\js\\demo.js": {
-    "j2brnfb91h": "测试中文匹配3",
-    "i9et3p75o3o": "测试中文匹配4"
+    "5w9m5h77weo": "测试中文匹配3",
+    "l1le6z35kgo": "测试中文匹配4"
   }
 }

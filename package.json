@@ -6,7 +6,7 @@
     "i18n-cli": "bin/index.js"
   },
   "scripts": {
-    "start": "nodemon --watch src --exec babel-node ./index.js getlang ./demo/vueTemp",
+    "start": "nodemon --watch src --exec babel-node ./index.js toexcel",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",
@@ -14,6 +14,7 @@
   "dependencies": {
     "@babel/parser": "^7.15.8",
     "@babel/runtime-corejs3": "^7.15.4",
+    "chalk": "^4.1.2",
     "commander": "^8.2.0",
     "core-js": "^3.19.0",
     "node-xlsx": "^0.17.2"
