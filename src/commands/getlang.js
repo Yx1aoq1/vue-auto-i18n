@@ -1,8 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
-import getConfig from '../utils/config'
-import { getExtname, getRandomStr } from '../utils/common'
+import { 
+  getExtname,
+  getRandomStr
+} from '../utils/common'
+import { isDirectory } from '../utils/fs'
 
 const CHINESE_REG = /[^\x00-\xff]+[^\<\>\"\'\`]*/g
 const VARIABLE_REG = /\$?\{?\{([a-zA-Z][a-zA-Z\d]*)\}?\}/g
@@ -26,10 +29,6 @@ function travelDir (src, ignore, callback) {
 
 function isIgnore (ignore, filename) {
   return ignore.includes(filename)
-}
-
-function isDirectory (filepath) {
-  return fs.statSync(filepath).isDirectory()
 }
 
 function handleCode (filepath) {

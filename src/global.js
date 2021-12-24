@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import dayjs from 'dayjs'
 // logger
 const info = console.info
 global.logger = {
@@ -14,6 +15,9 @@ global.logger = {
   },
   info: function() {
     console.log(chalk.cyan('[vue-i18n-cli] '), [].slice.call(arguments).join(' '))
+  },
+  logWithTime: function() {
+    info(chalk.cyan('[vue-i18n-cli] ') + ' [' + dayjs().format('YY.MM.DD HH:mm:ss') + '] ' + [].slice.call(arguments).join(' '));
   }
 }
 // 配置文件名称

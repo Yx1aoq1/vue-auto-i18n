@@ -1,4 +1,5 @@
 import './global'
+import getConfig from './utils/config'
 import commands from './commands'
 import program from 'commander'
 import { version } from '../package.json'
@@ -13,5 +14,7 @@ export function run (argv) {
     program.help()
     return
   }
+  // 用户配置
+  global.USER_CONFIG = getConfig()
   program.parse(argv)
 }
