@@ -29,20 +29,38 @@ export function isChineseChar (str) {
  * @param {*} res 
  * @param {*} isArray 
  */
-export function flat (obj, key = '', res = {}, isArray = false) {
+export function flatten (obj, key = '', res = {}, isArray = false) {
 	for (let [ k, v ] of Object.entries(obj)) {
 		if (Array.isArray(v)) {
 			let tmp = isArray ? key + '[' + k + ']' : key + k
-			flat(v, tmp, res, true)
+			flatten(v, tmp, res, true)
 		} else if (typeof v === 'object') {
 			let tmp = isArray ? key + '[' + k + '].' : key + k + '.'
-			flat(v, tmp, res)
+			flatten(v, tmp, res)
 		} else {
 			let tmp = isArray ? key + '[' + k + ']' : key + k
 			res[tmp] = v
 		}
 	}
 	return res
+}
+
+export function unflatten (data) {
+	if (Object(data) !== data || Array.isArray(data))
+			return data;
+	var regex = /\.?([^.\[\]]+)|\[(\d+)\]/g,
+			resultholder = {};
+	for (var p in data) {
+			var cur = resultholder,
+					prop = "",
+					m;
+			while (m = regex.exec(p)) {
+					cur = cur[prop] || (cur[prop] = (m[2] ? [] : {}));
+					prop = m[2] || m[1];
+			}
+			cur[prop] = data[p];
+	}
+	return resultholder[""] || resultholder;
 }
 
 /**

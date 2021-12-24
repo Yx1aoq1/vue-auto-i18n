@@ -6,7 +6,7 @@ import {
   getExtname,
   getFilenameWithoutExt,
   isChineseChar,
-  flat
+  flatten
 } from '../utils/common'
 import { 
   ensureDirectoryExistence,
@@ -20,8 +20,7 @@ function generateExcelData (cfg, filename, languagePath) {
   const langs = Object.keys(languagePath)
   langs.map(lang => {
     cols.push(execelCols[lang])
-    const filePath = path.resolve(languagePath[lang], filename)
-    flatI18n[lang] = flat(readESModuleFile(filePath))
+    flatI18n[lang] = flatten(readESModuleFile(languagePath[lang]))
   })
   const data = [
     cols
@@ -40,22 +39,21 @@ function generateExcelData (cfg, filename, languagePath) {
   return data
 }
 
-
-
-function getLanguagePaths (cfg) {
-  const languages = cfg.languages || DEFAULT_LANGUAGES
+function initLanguagePaths (cfg) {
+  // 配置单个目录时：
   if (typeof cfg.languagePath === 'string') {
+    const languages = cfg.languages || DEFAULT_LANGUAGES
     return languages.reduce((paths, lang) => {
       paths[lang] = path.resolve(process.cwd(), cfg.languagePath, lang)
       return paths
     }, {})
   }
+  // 配置多个目录时：
   if (isObject(cfg.languagePath)) {
-    const languagePath = { ...cfg.languagePath }
-    Object.keys(languagePath).map(lang => {
-      languagePath[lang] = path.resolve(process.cwd(), languagePath[lang])
-    })
-    return languagePath
+    return Object.keys(cfg.languagePath).reduce((target, lang) => {
+      target[lang] = path.resolve(process.cwd(), cfg.languagePath[lang])
+      return target
+    }, {})
   }
   return {}
 }
@@ -67,43 +65,54 @@ export default function toexcel (program) {
     .option('-d, --dir <exportDir>', '输出文件位置')
 		.description('将i18n文件转成excel')
 		.action((jspath = '', { exportName = 'translate', exportDir = './' }) => {
-      const langPaths = getLanguagePaths(USER_CONFIG)
+      let filepath
+      const langPaths = initLanguagePaths(USER_CONFIG)
       const langs = Object.keys(langPaths)
       if (!jspath) {
-        jspath = langPaths['zh-cn'] || langPaths[langs[0]]
+        filepath = langPaths['zh-cn'] || langPaths[langs[0]]
       } else {
-        jspath = path.resolve(process.cwd(), jspath)
+        filepath = path.resolve(process.cwd(), jspath)
       }
       // 验证目录存在
       try {
-        fs.accessSync(jspath, fs.constants.F_OK)
+        fs.accessSync(filepath, fs.constants.F_OK)
       } catch (error) {
-        error(`${jspath}文件或目录不存在`)
+        logger.error(`${filepath}文件或目录不存在`)
         process.exit()
       }
       // 导出execl
       const buildDatas = []
-      const extname = getExtname(jspath)
+      const extname = getExtname(filepath)
       // 单文件处理
       if (extname === 'js') {
-        const name = getFilenameWithoutExt(jspath)
+        const name = getFilenameWithoutExt(filepath)
         const data = generateExcelData(USER_CONFIG, name, {
-          'zh-cn': jspath
+          'unknow': filepath
         })
         buildDatas.push({
           name,
           data
         })
       } else {
-        // 文件夹处理
-        fs.readdirSync(jspath)
+      // 文件夹处理
+        fs.readdirSync(filepath)
           .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
           .forEach(filename => {
             const name = getFilenameWithoutExt(filename)
-            const data = generateExcelData(USER_CONFIG, filename, {
-              ...langPaths,
-              'zh-cn': jspath
-            })
+            let paths
+            // 有传入配置时，使用配置目录
+            if (jspath) {
+              paths = {
+                'unknow': path.resolve(filepath, filename)
+              }
+            } else {
+            // 无传入配置时，使用配置文件中已配目录
+              paths = langs.reduce((target, lang) => {
+                target[lang] = path.resolve(langPaths[lang], filename)
+                return target
+              }, {})
+            }
+            const data = generateExcelData(USER_CONFIG, name, paths)
             buildDatas.push({
               name,
               data

@@ -27,6 +27,8 @@ global.DEFAULT_LANGUAGES = ['zh-cn', 'en']
 // 默认导出excel列名
 global.DEFAULT_EXCEL_COLS = {
   'zh-cn': '中文',
-  en: '英文翻译'
+  en: '英文翻译',
+  unknow: '未知'
 }
+global.DEFAULT_OUTPUT_PATH = './output/locale'
 
