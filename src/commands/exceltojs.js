@@ -51,7 +51,7 @@ export default function exceltojs (program) {
       try {
         fs.accessSync(excelpath, fs.constants.F_OK)
       } catch (error) {
-        logger.error(`${jspath}文件或目录不存在`)
+        logger.error(`${excelpath}文件或目录不存在`)
         process.exit()
       }
       try {
