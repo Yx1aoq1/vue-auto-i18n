@@ -38,3 +38,15 @@ export function readESModuleFile (filePath) {
 export function isDirectory (filepath) {
   return fs.statSync(filepath).isDirectory()
 }
+
+/**
+ * 导出文件到指定位置
+ * @param {*} filepath 
+ * @param {*} buffer 
+ * @param {*} options 
+ */
+export function exportFile (filepath, buffer, options) {
+  // 确保目录存在
+  ensureDirectoryExistence(filepath)
+  return fs.writeFileSync(filepath, buffer, options)
+}

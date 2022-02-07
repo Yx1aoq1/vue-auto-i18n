@@ -45,22 +45,25 @@ export function flatten (obj, key = '', res = {}, isArray = false) {
 	return res
 }
 
+/**
+ * 扁平化恢复
+ * @param {*} data 
+ */
 export function unflatten (data) {
-	if (Object(data) !== data || Array.isArray(data))
-			return data;
-	var regex = /\.?([^.\[\]]+)|\[(\d+)\]/g,
-			resultholder = {};
-	for (var p in data) {
-			var cur = resultholder,
-					prop = "",
-					m;
+	if (!isObject(data) || Array.isArray(data)) return data
+	const regex = /\.?([^.\[\]]+)|\[(\d+)\]/g
+	const	resultholder = {}
+	for (const p in data) {
+			let cur = resultholder
+			let	prop = ''
+			let m
 			while (m = regex.exec(p)) {
-					cur = cur[prop] || (cur[prop] = (m[2] ? [] : {}));
-					prop = m[2] || m[1];
+				cur = cur[prop] || (cur[prop] = (m[2] ? [] : {}))
+				prop = m[2] || m[1]
 			}
-			cur[prop] = data[p];
+			cur[prop] = data[p]
 	}
-	return resultholder[""] || resultholder;
+	return resultholder[''] || resultholder
 }
 
 /**
