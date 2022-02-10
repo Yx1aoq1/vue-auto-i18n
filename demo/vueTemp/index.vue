@@ -22,9 +22,14 @@
     <DemoComponent a="中文a" b="中文b"></DemoComponent>
     <!-- 重复中文测试 -->
     <DemoComponent a="中文c" b="中文c"></DemoComponent>
+    <!-- 测试属性表达式 -->
+    <DemoComponent :text="'你好' + name"></DemoComponent>
   </div>
 </template>
 <script>
+import other from 'other'
+const name = '测试export以外的中文'
+
 export default {
   name: 'test',
   components: {
@@ -45,7 +50,9 @@ export default {
   methods: {
     // 代码里的中文
     log () {
-      console.log('测试代码方法中文')
+      const name = 'xm'
+      alert(`Hello ${name}`)
+      alert(`Hello ${this.text}`)
     }
   }
 }

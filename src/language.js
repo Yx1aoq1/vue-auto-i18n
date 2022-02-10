@@ -41,4 +41,19 @@ export default class LanguageUtils {
     i18n[key] = value
     this.map.set(name, i18n)
   }
+
+  stringToIdentifier (name, text) {
+    const variable = /\$?\{?\{([a-zA-Z][a-zA-Z\d\.]*)\}?\}/g
+    const variableMatch = variable.exec(text)
+    const vname = variableMatch && variableMatch[1]
+    let param, key
+    if (vname && vname.includes('.')) {
+      param = `{ value: ${vname} }`
+      key = this.findKey(name, text.replace(variable, 'value'))
+    } else {
+      param = `{ ${name} }`
+      key = this.findKey(name, text.replace(variable, '{$1}'))
+    }
+    return !!variableMatch ? `$t('${key}', ${param})` : `$t('${key}')`
+  }
 }

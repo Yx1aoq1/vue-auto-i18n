@@ -87,3 +87,26 @@ export function getRandomStr () {
     ? val => map[val.toLowerCase()]
     : val => map[val]
 }
+
+export function once (fn, context) { 
+	var result
+	return function() { 
+		if(fn) {
+			result = fn.apply(context || this, arguments)
+			fn = null
+		}
+		return result
+	}
+}
+
+/**
+ * 将文本start-end处的文本替换为replace
+ * @param {*} soure 
+ * @param {*} start 
+ * @param {*} end 
+ * @param {*} replace 
+ * @returns 
+ */
+ export function splice (soure, start, end, replace) {
+  return soure.slice(0, start) + replace + soure.slice(end)
+}
