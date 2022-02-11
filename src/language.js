@@ -1,17 +1,60 @@
 import fs from 'fs'
 import path from 'path'
-import { getFilenameWithoutExt, flatten, unflatten, getRandomStr } from './utils/common'
+import { 
+  getFilenameWithoutExt,
+  getExtname,
+  flatten,
+  unflatten,
+  getRandomStr
+} from './utils/common'
 import { readESModuleFile, exportFile } from './utils/fs'
+import translateHTML from './translateHTML'
+import translateJS from './translateJS'
+import * as vueCompiler from 'vue-template-compiler'
+import Stringify from 'vue-sfc-descriptor-stringify'
+import cloneDeep from 'lodash.clonedeep'
+
+function handleVueCode (code, languageUtils, exportName) {
+  const originSfcDescriptor = vueCompiler.parseComponent(code)
+  const sfcDescriptor = cloneDeep(originSfcDescriptor)
+  sfcDescriptor.template.content = handleTemplateCode(sfcDescriptor.template.content, languageUtils, exportName)
+  sfcDescriptor.script.content = handleJavaScriptCode(sfcDescriptor.script.content, languageUtils, exportName)
+  
+  return Stringify(sfcDescriptor, originSfcDescriptor)
+}
+
+function handleTemplateCode (code, languageUtils, exportName) {
+  // 该文件代码是否忽略国际化
+  if (isIgnore(code)) {
+    return code
+  }
+  return translateHTML(code, languageUtils, exportName)
+}
+
+function handleJavaScriptCode (code, languageUtils, exportName, isVue) {
+  // 该文件代码是否忽略国际化
+  if (isIgnore(code)) {
+    return code
+  }
+  return translateJS(code, languageUtils, exportName, isVue)
+}
+
+/**
+ * 如果代码中包含 i18nIgnore 关键字，则该文件忽略国际化
+ * @param {*} code
+ */
+function isIgnore(code) {
+  return code.includes('i18nIgnore')
+}
 
 export default class LanguageUtils {
   constructor (lang) {
     this.cfg = USER_CONFIG
     this.langPath = path.resolve(process.cwd(), this.cfg.languagePath, lang)
-    this.map = this.createMap(lang)
+    this.map = this.createMap()
   }
 
-  createMap (lang) {
-    
+  createMap () {
     const i18nMap = new Map()
     fs.readdirSync(this.langPath)
       .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
@@ -58,7 +101,7 @@ export default class LanguageUtils {
     return !!variableMatch ? `$t('${key}', ${param})` : `$t('${key}')`
   }
 
-  exportFile (name, filepath, type = 'js') {
+  getLocale (name, filepath, type = 'js') {
     let content = unflatten(this.map.get(name)) || {}
     if (!filepath) {
       filepath = path.resolve(this.langPath, name)
@@ -71,5 +114,22 @@ export default class LanguageUtils {
         content = content.replace(/\"([\w_-]*)\":\s*\"(.*)\"/g, '$1: \'$2\'')
         return exportFile(filepath + '.js', content, { flag: 'w' })
     }
+  }
+
+  translate (filepath, name, replace = false) {
+    const extname = getExtname(filepath)
+    const code = fs.readFileSync(filepath, 'utf-8')
+    let newCode
+    switch (extname) {
+      case 'vue':
+        newCode = handleVueCode(code, this, name)
+        break
+      case 'js':
+        newCode = handleJavaScriptCode(code, this, name, false)
+        break
+      default:
+        return
+    }
+    replace && exportFile(filepath, newCode, { flag: 'w' })
   }
 }
