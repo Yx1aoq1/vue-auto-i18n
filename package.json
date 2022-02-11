@@ -6,7 +6,7 @@
     "i18n-cli": "bin/index.js"
   },
   "scripts": {
-    "start": "nodemon --watch src --exec babel-node ./index.js translate ./demo/vueTemp/js/demo.js test",
+    "start": "nodemon --watch src --exec babel-node ./index.js translate ./demo/vueTemp test",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",

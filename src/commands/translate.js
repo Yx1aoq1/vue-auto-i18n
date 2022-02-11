@@ -4,6 +4,7 @@ import LanguageUtils from '../language'
 import translateHTML from '../translateHTML'
 import translateJS from '../translateJS'
 import { getExtname } from '../utils/common'
+import { exportFile, isDirectory } from '../utils/fs'
 import * as vueCompiler from 'vue-template-compiler'
 import Stringify from 'vue-sfc-descriptor-stringify'
 import cloneDeep from 'lodash.clonedeep'
@@ -41,6 +42,21 @@ function isIgnore(code) {
   return code.includes('i18nIgnore')
 }
 
+/**
+ * 遍历文件夹
+ */
+function travelDir (src, callback) {
+  fs.readdirSync(src).forEach(filename => {
+    // 判断是否为文件夹
+    const filepath = path.join(src, filename)
+    if (isDirectory(filepath)) {
+      travelDir(filepath, callback)
+    } else {
+      callback(filepath)
+    }
+  })
+}
+
 
 
 export default function transalte (program) {
@@ -48,9 +64,22 @@ export default function transalte (program) {
     .command('translate <filepath> <exportName> [lang]')
     .description('对<filepath>文件进行中文提取，提取至<exportName>文件中')
     .action((filepath, exportName, lang = 'zh-cn') => {
-      function exportNewCodeAndLocale (newCode) {
-        fs.writeFileSync(filepath, newCode, { flag: 'w' })
-        languageUtils.exportFile(exportName)
+      function handleSingleFile (filepath) {
+        const extname = getExtname(filepath)
+        const code = fs.readFileSync(filepath, 'utf-8')
+        // vue单文件处理
+        let newCode
+        switch (extname) {
+          case 'vue':
+            newCode = handleVueCode(code, languageUtils, exportName)
+            break
+          case 'js':
+            newCode = handleJavaScriptCode(code, languageUtils, exportName, false)
+            break
+          default:
+            return
+        }
+        exportFile(filepath, newCode, { flag: 'w' })
       }
       const languageUtils = new LanguageUtils(lang)
       // 验证目录存在
@@ -61,15 +90,19 @@ export default function transalte (program) {
         process.exit()
       }
       const extname = getExtname(filepath)
-      // vue单文件处理
-			if (extname === 'vue') {
-        const code = fs.readFileSync(filepath, 'utf-8')
-        const newCode = handleVueCode(code, languageUtils, exportName)
-        exportNewCodeAndLocale(newCode)
-			} else if (extname === 'js') {
-        const code = fs.readFileSync(filepath, 'utf-8')
-        const newCode = handleJavaScriptCode(code, languageUtils, exportName, false)
-        exportNewCodeAndLocale(newCode)
+      // 单文件处理
+			if (['vue', 'js'].includes(extname)) {
+        handleSingleFile(filepath)
+        languageUtils.exportFile(exportName)
+      } else {
+      // 文件夹处理
+        travelDir(filepath, (path) => {
+          const ext = getExtname(path)
+          if (['vue', 'js'].includes(ext)) {
+            handleSingleFile(path)
+          }
+        })
+        languageUtils.exportFile(exportName)
       }
     })
 }

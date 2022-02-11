@@ -41,9 +41,11 @@ export default function (code, languageUtils, exportName, isVue = true) {
     if (token.type.label === '`') {
       const endTokenIdx = tokens.findIndex(item => item.type.label === '`')
       const start = token.start
-      const end = tokens[endTokenIdx].start
+      const end = tokens[endTokenIdx].end
       const text = origin.substring(start, end)
-      handleReplaceChineseChar(start, end, text)
+      if (isChineseChar(text)) {
+        handleReplaceChineseChar(start, end, text)
+      }
       tokens = tokens.slice(endTokenIdx + 1)
     }
     // 跳过console.log的国际化
