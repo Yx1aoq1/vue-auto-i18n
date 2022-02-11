@@ -50,7 +50,7 @@ function isIgnore(code) {
 export default class LanguageUtils {
   constructor (lang) {
     this.cfg = USER_CONFIG
-    this.langPath = path.resolve(process.cwd(), this.cfg.languagePath, lang)
+    this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang)
     this.map = this.createMap()
   }
 
