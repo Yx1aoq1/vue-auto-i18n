@@ -10,7 +10,7 @@ export default class Scanner {
 
 	// 功能弱，就是走过指定内容，没有返回值，就是跳过{{和}}两个符号
 	scan (tag) {
-		if (this.tail.indexOf(tag) == 0) {
+		if (this.tail.indexOf(tag) === 0) {
 			// tag有多长，比如{{长度是2，就让指针后移多少位
 			this.pos += tag.length
 			// 尾巴也要变，改变尾巴为从当前指针这个字符开始，到最后的全部字符
@@ -24,7 +24,7 @@ export default class Scanner {
 		const pos_backup = this.pos
 		// 当尾巴的开头不是stopTag的时候，就说明还没有扫描到stopTag
 		// 写&&很有必要，因为防止找不到，那么寻找到最后也要停止下来
-		while (!this.eos() && this.tail.indexOf(stopTag) != 0) {
+		while (!this.eos() && this.tail.indexOf(stopTag) !== 0) {
 			this.pos++
 			// 改变尾巴为从当前指针这个字符开始，到最后的全部字符
 			this.tail = this.templateStr.substring(this.pos)
