@@ -31,5 +31,6 @@ export default function transalte (program) {
         })
         languageUtils.getLocale(exportName)
       }
+      logger.success('已成功替换中文，请自行检查代码')
     })
 }

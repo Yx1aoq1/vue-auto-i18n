@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import xlsx from 'node-xlsx'
 import { unflatten } from '../utils/common'
-import { exportFile } from '../utils/fs'
+import { exportLocale } from '../utils/fs'
 
 function findExcelColLang (cfg, name) {
 	const execelCols = cfg.execelCols || DEFAULT_EXCEL_COLS
@@ -29,10 +29,9 @@ function generateJSFromSheets (basePath, data) {
 	data.map(cur => {
 		const result = parseExcelDatas(cur.data)
 		Object.keys(result).map(lang => {
-			const buffer = `export default ${JSON.stringify(result[lang][cur.name], null, 2)}`
-			const exportFilePath = path.resolve(basePath, lang, `${cur.name}.js`)
+			const exportFilePath = path.resolve(basePath, lang, cur.name)
 			// 如果文件存在，覆盖
-			exportFile(exportFilePath, buffer, { flag: 'w' })
+			exportLocale(exportFilePath, result[lang][cur.name])
 		})
 	})
 }

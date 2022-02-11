@@ -1,7 +1,7 @@
 {
-  "name": "vue-i18n-cli",
+  "name": "vue-auto-i18n",
   "version": "1.0.0",
-  "description": "将vue-i18n文件导出为excel",
+  "description": "vue替换中文i18n工具",
   "bin": {
     "i18n-cli": "bin/index.js"
   },
@@ -19,7 +19,8 @@
     "lodash.clonedeep": "^4.5.0",
     "node-xlsx": "^0.17.2",
     "vue-sfc-descriptor-stringify": "^0.1.0",
-    "vue-template-compiler": "^2.6.14"
+    "vue-template-compiler": "^2.6.14",
+    "@babel/runtime-corejs3": "^7.17.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
@@ -27,7 +28,6 @@
     "@babel/node": "^7.15.8",
     "@babel/plugin-transform-runtime": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
-    "@babel/runtime-corejs3": "^7.17.2",
     "nodemon": "^2.0.14"
   },
   "engines": {

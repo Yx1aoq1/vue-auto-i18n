@@ -14,10 +14,10 @@ global.logger = {
     info(chalk.bold.red(' X '), chalk.bold.red([].slice.call(arguments).join(' ')));
   },
   info: function() {
-    console.log(chalk.cyan('[vue-i18n-cli] '), [].slice.call(arguments).join(' '))
+    console.log(chalk.cyan('[vue-auto-i18n] '), [].slice.call(arguments).join(' '))
   },
   logWithTime: function() {
-    info(chalk.cyan('[vue-i18n-cli] ') + ' [' + dayjs().format('YY.MM.DD HH:mm:ss') + '] ' + [].slice.call(arguments).join(' '));
+    info(chalk.cyan('[vue-auto-i18n] ') + ' [' + dayjs().format('YY.MM.DD HH:mm:ss') + '] ' + [].slice.call(arguments).join(' '));
   }
 }
 // 配置文件名称

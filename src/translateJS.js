@@ -27,7 +27,7 @@ export default function (code, languageUtils, exportName, isVue = true) {
   })
 
   const origin = code
-  let tokens = [...Parser.tokenizer(origin)]
+  let tokens = [...Parser.tokenizer(origin, { ecmaVersion: 7 })]
   let exportLocation
   let offset = 0
   while (tokens.length) {

@@ -7,7 +7,7 @@ import {
   unflatten,
   getRandomStr
 } from './utils/common'
-import { readESModuleFile, exportFile } from './utils/fs'
+import { readESModuleFile, exportFile, exportLocale } from './utils/fs'
 import translateHTML from './translateHTML'
 import translateJS from './translateJS'
 import * as vueCompiler from 'vue-template-compiler'
@@ -101,19 +101,12 @@ export default class LanguageUtils {
     return !!variableMatch ? `$t('${key}', ${param})` : `$t('${key}')`
   }
 
-  getLocale (name, filepath, type = 'js') {
+  getLocale (name, filepath, type) {
     let content = unflatten(this.map.get(name)) || {}
     if (!filepath) {
       filepath = path.resolve(this.langPath, name)
     }
-    switch (type) {
-      case 'json':
-        return exportFile(filepath + '.json', JSON.stringify(content, null, 2), { flag: 'w' })
-      case 'js':
-        content = `export default ${JSON.stringify(content, null, 2)}`
-        content = content.replace(/\"([\w_-]*)\":\s*\"(.*)\"/g, '$1: \'$2\'')
-        return exportFile(filepath + '.js', content, { flag: 'w' })
-    }
+    exportLocale(filepath, content, type)
   }
 
   translate (filepath, name, replace = false) {

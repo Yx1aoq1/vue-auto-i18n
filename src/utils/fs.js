@@ -65,3 +65,15 @@ export function travelDir (src, callback) {
     }
   })
 }
+
+export function exportLocale (filepath, obj, type = 'js') {
+  let content = JSON.stringify(obj, null, 2)
+  switch (type) {
+    case 'json':
+      return exportFile(filepath + '.json', content, { flag: 'w' })
+    case 'js':
+      content = `export default ${content}`
+      content = content.replace(/\"([\w_-]*)\":/g, '$1:').replace(/:\s*\"(.*)\"/g, ': \'$1\'')
+      return exportFile(filepath + '.js', content, { flag: 'w' })
+  }
+}

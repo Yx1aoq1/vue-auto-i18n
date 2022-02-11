@@ -31,5 +31,6 @@ export default function getlang (program) {
         })
         languageUtils.getLocale(exportName)
       }
+      logger.success(`已生成 ${exportName} 文件并导出至 ${languageUtils.langPath} 目录`)
     })
 }

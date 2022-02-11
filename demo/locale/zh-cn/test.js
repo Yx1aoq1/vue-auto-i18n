@@ -1,0 +1,22 @@
+export default {
+  trans_r1nhfsffsqg: '纯文字替换',
+  trans_jkgh8xal63d: '中文+变量显示：{value}',
+  trans_s4rrhywu3ms: '第一行',
+  trans_qaepzkh45: '第二行',
+  trans_ho2xsgksd4: '第三行',
+  trans_0b6bafa95z8: '属性纯中文',
+  trans_58bvyi4musn: '属性中文带变量{value}',
+  trans_7jnpwmaot2m: '不能为空',
+  trans_sq58m1q1sk: '元素1',
+  trans_oxy2t6v1z: '元素2',
+  trans_k45owtfa49k: '中文a',
+  trans_8fhgf0apgme: '中文b',
+  trans_cxd3menna7: '中文c',
+  trans_mfdqklinlvh: '你好',
+  trans_88h660sqje2: '测试export以外的中文',
+  trans_bw5mmxhorkd: '测试定义变量中文',
+  trans_ky71fay4oag: '中文数组1',
+  trans_mq5eznei6c: '中文数组2',
+  trans_8zg2ecwgr93: '测试中文匹配3',
+  trans_gs6nqigwg1: '测试中文匹配4'
+}
