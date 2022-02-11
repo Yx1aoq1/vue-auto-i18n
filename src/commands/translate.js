@@ -41,11 +41,17 @@ function isIgnore(code) {
   return code.includes('i18nIgnore')
 }
 
+
+
 export default function transalte (program) {
   program
     .command('translate <filepath> <exportName> [lang]')
     .description('对<filepath>文件进行中文提取，提取至<exportName>文件中')
     .action((filepath, exportName, lang = 'zh-cn') => {
+      function exportNewCodeAndLocale (newCode) {
+        fs.writeFileSync(filepath, newCode, { flag: 'w' })
+        languageUtils.exportFile(exportName)
+      }
       const languageUtils = new LanguageUtils(lang)
       // 验证目录存在
 			try {
@@ -59,11 +65,11 @@ export default function transalte (program) {
 			if (extname === 'vue') {
         const code = fs.readFileSync(filepath, 'utf-8')
         const newCode = handleVueCode(code, languageUtils, exportName)
-        console.log(newCode)
+        exportNewCodeAndLocale(newCode)
 			} else if (extname === 'js') {
         const code = fs.readFileSync(filepath, 'utf-8')
         const newCode = handleJavaScriptCode(code, languageUtils, exportName, false)
-        console.log(newCode)
+        exportNewCodeAndLocale(newCode)
       }
     })
 }

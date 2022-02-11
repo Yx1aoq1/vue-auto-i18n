@@ -1,22 +1,23 @@
 import fs from 'fs'
 import path from 'path'
-import { getFilenameWithoutExt, flatten, getRandomStr } from './utils/common'
-import { readESModuleFile } from './utils/fs'
+import { getFilenameWithoutExt, flatten, unflatten, getRandomStr } from './utils/common'
+import { readESModuleFile, exportFile } from './utils/fs'
 
 export default class LanguageUtils {
   constructor (lang) {
     this.cfg = USER_CONFIG
+    this.langPath = path.resolve(process.cwd(), this.cfg.languagePath, lang)
     this.map = this.createMap(lang)
   }
 
   createMap (lang) {
-    const langPath = path.resolve(process.cwd(), this.cfg.languagePath, lang)
+    
     const i18nMap = new Map()
-    fs.readdirSync(langPath)
+    fs.readdirSync(this.langPath)
       .filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
       .forEach(filename => {
         const name = getFilenameWithoutExt(filename)
-        const filepath = path.resolve(langPath, filename)
+        const filepath = path.resolve(this.langPath, filename)
         const flatI18n = flatten(readESModuleFile(filepath))
         i18nMap.set(name, flatI18n)
       })
@@ -31,7 +32,7 @@ export default class LanguageUtils {
         }
       }
     }
-    const newKey = getRandomStr()
+    const newKey = `trans_${getRandomStr()}`
     this.updateKey(name, newKey, text)
     return `${name}.${newKey}`
   }
@@ -55,5 +56,20 @@ export default class LanguageUtils {
       key = this.findKey(name, text.replace(variable, '{$1}'))
     }
     return !!variableMatch ? `$t('${key}', ${param})` : `$t('${key}')`
+  }
+
+  exportFile (name, filepath, type = 'js') {
+    let content = unflatten(this.map.get(name)) || {}
+    if (!filepath) {
+      filepath = path.resolve(this.langPath, name)
+    }
+    switch (type) {
+      case 'json':
+        return exportFile(filepath + '.json', JSON.stringify(content, null, 2), { flag: 'w' })
+      case 'js':
+        content = `export default ${JSON.stringify(content, null, 2)}`
+        content = content.replace(/\"([\w_-]*)\":\s*\"(.*)\"/g, '$1: \'$2\'')
+        return exportFile(filepath + '.js', content, { flag: 'w' })
+    }
   }
 }

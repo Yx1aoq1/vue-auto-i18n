@@ -15,14 +15,14 @@ export default function (code, languageUtils, exportName, isVue = true) {
       value = `this.${identifier}`
     } else {
       value = `i18n.${identifier.substring(1)}`
-      importI18nFun()
+      USER_CONFIG.importI18nFunction && importI18nFun(USER_CONFIG.importI18nFunction)
     }
     codeReplace(start, end, value)
   }
 
-  const importI18nFun = once(() => {
+  const importI18nFun = once((importFun) => {
     const start = isVue ? 2 : 0 // vue 文件中首个字符通常为换行
-    code = splice(code, start, start, 'import i18n from \'@/plugins/i18n\'\r\n')
+    code = splice(code, start, start, `${importFun}\r\n`)
     offset = code.length - origin.length
   })
 
@@ -46,6 +46,22 @@ export default function (code, languageUtils, exportName, isVue = true) {
       handleReplaceChineseChar(start, end, text)
       tokens = tokens.slice(endTokenIdx + 1)
     }
-  } 
+    // 跳过console.log的国际化
+    if (token.type.label === 'name' && token.value === 'console') {
+      const leftBracketIdx = tokens.findIndex(item => item.type.label === '(')
+      const stack = [leftBracketIdx]
+      let curToken, index = leftBracketIdx + 1
+      while (stack.length) {
+        curToken = tokens[index++]
+        if (curToken.type.label === ')') {
+          stack.pop()
+        }
+        if (curToken.type.label === '(') {
+          stack.push(index)
+        }
+      }
+      tokens = tokens.slice(index)
+    }
+  }
   return code
 }
