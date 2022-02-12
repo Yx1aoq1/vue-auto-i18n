@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getFilenameWithoutExt, getExtname, flatten, unflatten, getRandomStr } from './utils/common'
-import { readESModuleFile, exportFile, exportLocale } from './utils/fs'
+import { readESModuleFile, exportFile, exportLocale, ensureDirectoryExistence } from './utils/fs'
 import translateHTML from './translateHTML'
 import translateJS from './translateJS'
 import * as vueCompiler from 'vue-template-compiler'
@@ -44,21 +44,23 @@ function isIgnore (code) {
 export default class LanguageUtils {
 	constructor (lang) {
 		this.cfg = USER_CONFIG
-		this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang)
+		this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang + '/')
 		this.map = this.createMap()
 	}
 
 	createMap () {
 		const i18nMap = new Map()
-		fs
-			.readdirSync(this.langPath)
-			.filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
-			.forEach(filename => {
-				const name = getFilenameWithoutExt(filename)
-				const filepath = path.resolve(this.langPath, filename)
-				const flatI18n = flatten(readESModuleFile(filepath))
-				i18nMap.set(name, flatI18n)
-			})
+		if (fs.existsSync(this.langPath)) {
+			fs
+				.readdirSync(this.langPath)
+				.filter(filename => filename !== 'index.js' && filename.indexOf('.js') > -1)
+				.forEach(filename => {
+					const name = getFilenameWithoutExt(filename)
+					const filepath = path.resolve(this.langPath, filename)
+					const flatI18n = flatten(readESModuleFile(filepath))
+					i18nMap.set(name, flatI18n)
+				})
+		}
 		return i18nMap
 	}
 
