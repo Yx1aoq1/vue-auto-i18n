@@ -1,5 +1,5 @@
 import { isChineseChar, splice } from './utils/common'
-import Scanner from './scanner'
+import parseTemplate from './parseTemplate'
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const ncname = '[a-zA-Z_][\\w\\-\\.]*'
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
@@ -7,14 +7,13 @@ const startTagOpen = new RegExp(`^<${qnameCapture}`)
 const startTagClose = /^\s*(\/?)>/
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
 const comment = /^<!\--/
-const chinese = /[^\x00-\xff]+.*/g
 
 let IS_REGEX_CAPTURING_BROKEN = false
 'x'.replace(/x(.)?/g, function (m, g) {
 	IS_REGEX_CAPTURING_BROKEN = g === ''
 })
 
-export default function (code, languageUtils, exportName) {
+export default function translateHTML (code, languageUtils, exportName) {
 	/**
    * 截取 html 模板，并设置当前 html 模板的开始位置位于最初 html 模板里的位置
    */
@@ -107,72 +106,25 @@ export default function (code, languageUtils, exportName) {
 	}
 
 	function handleReplaceChineseChar (text, start, isTemplate = true) {
-		const scanner = new Scanner(text)
-		let words
-		// 当处理的字符串是template模板时
-		if (/{{.*}}/.test(text)) {
-			while (!scanner.eos()) {
-				words = scanner.scanUtil('{{')
-				if (words && isChineseChar(words)) {
-					const identifier = languageUtils.stringToIdentifier(exportName, words)
-					codeReplace(start + scanner.pos - words.length, start + scanner.pos, `{{ ${identifier} }}`)
-				}
-				scanner.scan('{{')
-				words = scanner.scanUtil('}}')
-				if (words && isChineseChar(words) && !words.includes('|')) {
-					handleReplaceChineseChar(words, start + scanner.pos - words.length, false)
-				}
-				scanner.scan('}}')
+		const tokens = parseTemplate(text)
+		tokens.forEach(token => {
+			if (token.type === 'html-params') {
+				handleReplaceChineseChar(token.text, start + token.start, false)
+			} else {
+				isTemplate = isTemplate && token.type === 'text'
+				const params = (token.params || []).map(item => ({
+					name: item.name,
+					value: item.value && translateHTML(item.value, languageUtils, exportName)
+				}))
+				const identifier = languageUtils.stringToIdentifier(exportName, token.text, params)
+				codeReplace(start + token.start, start + token.end, isTemplate ? `{{ ${identifier} }}` : identifier)
 			}
-			return
-		}
-		// 处理的字符串为ES6语法的模板
-		if (/^`(.+)`$/.test(text)) {
-			// // 如果模板不存在任何的
-			// if (!/\${[\s\S]+}/.test(text)) {
-
-			// }
-			// while (!scanner.eos()) {
-			//   words = scanner.scanUtil('${')
-
-			// }
-			return
-		}
-		// 其他情况，寻找引号标签包裹的中文
-		let quote = "'"
-		while (!scanner.eos()) {
-			words = scanner.scanUtil(quote)
-			// 引号前包含中文，说明这段文字就是纯中文，直接退出循环
-			if (words && isChineseChar(words)) {
-				const zhMatch = words.match(chinese)
-				while (zhMatch && zhMatch.length) {
-					const char = zhMatch.shift()
-					const charStart = start + words.indexOf(char)
-					const charEnd = charStart + char.length
-					const identifier = languageUtils.stringToIdentifier(exportName, char)
-					codeReplace(charStart, charEnd, isTemplate ? `{{ ${identifier} }}` : identifier)
-				}
-				break
-			}
-			scanner.scan(quote)
-			words = scanner.scanUtil(quote)
-			// 有可能匹配到转义符后的引号，需要找到不是转义符后的引号
-			while (words.slice(-1) === '\\') {
-				scanner.scan(quote)
-				words += quote + scanner.scanUtil(quote)
-			}
-			if (words && isChineseChar(words)) {
-				const identifier = languageUtils.stringToIdentifier(exportName, words)
-				codeReplace(start + scanner.pos - words.length - 1, start + scanner.pos + 1, identifier)
-			}
-			scanner.scan(quote)
-		}
+		})
 	}
 
 	function codeReplace (start, end, replace) {
 		code = splice(code, start + offset, end + offset, replace)
 		offset = code.length - origin.length
-		console.log('code:', code)
 	}
 
 	const origin = code

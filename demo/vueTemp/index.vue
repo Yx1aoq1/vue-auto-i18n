@@ -5,7 +5,7 @@
     <!-- 中文 + {{变量}} -->
     <div>中文+变量显示：{{value}}</div>
     <!-- 中文 + 多个变量 -->
-    <div>中文 + {{ value1 }} {{ fun('函数参数,\'你好\'') }} {{ time | dateFormat }}</div>
+    <div>中文1{{ value1 }}中文2{{ fun('函数内部中文') }}中文3{{ time | dateFormat }}</div>
     <!-- 换行测试 -->
     <div>
       1.第一行
@@ -15,7 +15,9 @@
     <!-- 属性纯中文 -->
     <input placeholder="属性纯中文" />
     <!-- 属性值为 `中文${变量}` -->
-    <input :placeholder="`属性中文带变量${value}`" />
+    <input :placeholder="`ES6模板字符串${value}`" />
+    <!-- 属性值为 嵌套模板字符串 -->
+    <input :placeholder="`ES6模板字符串${fun(flag ? '中文字符串1' : `模板字符串2${value}`)}`" />
     <!-- 属性值为对象 -->
     <DemoComponent :rule="{reuqired: true, message: '不能为空'}"></DemoComponent>
     <!-- 属性值为数组 -->
@@ -28,6 +30,7 @@
     <DemoComponent :text="'你好' + name"></DemoComponent>
   </div>
 </template>
+
 <script>
 import other from 'other'
 const name = '测试export以外的中文'
@@ -53,11 +56,12 @@ export default {
     // 代码里的中文
     log () {
       const name = 'xm'
-      alert(`Hello ${name}`)
-      alert(`Hello ${this.text}`)
+      alert(`中文模板变量 ${name}`)
+      alert(`中文模板变量 ${this.text}`)
     }
   }
 }
 </script>
+
 <style lang="less" scoped>
 </style>
