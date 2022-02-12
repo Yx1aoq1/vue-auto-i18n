@@ -4,13 +4,16 @@ import { isChineseChar } from './utils/common'
 const chinese = /[^\x00-\xff]+.*/g
 const expression = /{{.*}}/
 const vname = /^[a-zA-Z\$_][a-zA-Z\d_]*$/
-// 需要查找的四个关键字
-const keys = [ "'", '`', '${', '}' ]
+// 需要查找的关键字
+const keys = [ "'", '`', '${', '}', '"', 'console.log', '(', ')' ]
 const keysMatch = {
 	"'": "'",
+	'"': '"',
 	'`': '`',
 	'${': '}',
-	'}': ''
+	'}': '',
+	'(': ')',
+	'console.log': ''
 }
 
 export default function parseTemplate (template) {
@@ -53,6 +56,7 @@ export default function parseTemplate (template) {
 	let exppos = 0
 	let idx = 0
 	let params = []
+	let ignore = false
 	const keywords = []
 	// 查找关键字
 	words = scanner.scanUtil(keys)
@@ -82,6 +86,11 @@ export default function parseTemplate (template) {
 			else exp += words + scanner.keyword
 			continue
 		}
+		// 匹配到console.log，忽略至)字符的位置的所有字符
+		if (scanner.keyword === 'console.log') {
+			ignore = true
+			continue
+		}
 		if (!keywords.length && scanner.keyword) {
 			// 匹配到开始标签，初始化数据
 			const matchKey = keysMatch[scanner.keyword]
@@ -99,6 +108,10 @@ export default function parseTemplate (template) {
 			const matchKey = keysMatch[scanner.keyword]
 			if (keysMatch[last] !== scanner.keyword) matchKey && keywords.push(scanner.keyword)
 			else keywords.pop()
+		}
+		if (ignore && scanner.keyword === ')' && !keywords.length) {
+			ignore = false
+			continue
 		}
 		// 匹配到${，说明开始匹配模板变量
 		if (!exppos && scanner.keyword === '${') {

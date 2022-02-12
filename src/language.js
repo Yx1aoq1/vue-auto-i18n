@@ -11,7 +11,7 @@ import cloneDeep from 'lodash.clonedeep'
 function handleVueCode (code, languageUtils, exportName) {
 	const originSfcDescriptor = vueCompiler.parseComponent(code)
 	const sfcDescriptor = cloneDeep(originSfcDescriptor)
-	// sfcDescriptor.template.content = handleTemplateCode(sfcDescriptor.template.content, languageUtils, exportName)
+	sfcDescriptor.template.content = handleTemplateCode(sfcDescriptor.template.content, languageUtils, exportName)
 	sfcDescriptor.script.content = handleJavaScriptCode(sfcDescriptor.script.content, languageUtils, exportName)
 
 	return Stringify(sfcDescriptor, originSfcDescriptor)
