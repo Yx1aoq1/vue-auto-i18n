@@ -127,6 +127,7 @@ export default function parseTemplate (template) {
 				})
 				token = ''
 				tokenpos = 0
+				params = []
 			}
 			if ([ ')', '\r\n', '*/' ].includes(keyword)) {
 				ignore = false
