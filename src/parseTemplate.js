@@ -2,66 +2,42 @@ import Scanner from './scanner'
 import { isChineseChar } from './utils/common'
 
 const chinese = /[^\x00-\xff]+.*/g
-const expression = /{{.*}}/
 const vname = /^[a-zA-Z\$_][a-zA-Z\d_]*$/
 // 需要查找的关键字
-const keys = [ "'", '`', '${', '}', '"', 'console.log', '(', ')' ]
-const keysMatch = {
+const KEYWORD = [ "'", '`', '{{', '}}', '${', '}', '"', '(', ')', '//', '/**', '*/', '\r\n' ]
+const QUOTE = [ "'", '"', '`' ]
+const MATCH_KEYWORD = {
 	"'": "'",
 	'"': '"',
 	'`': '`',
 	'${': '}',
 	'}': '',
 	'(': ')',
-	'console.log': ''
+	'{{': '}}',
+	'//': '\r\n',
+	'/**': '*/'
 }
 
 export default function parseTemplate (template) {
 	const scanner = new Scanner(template)
 	const tokens = []
+	const keywordStack = []
 	let words
+	let keyword
 	let start
-	// 当处理的字符串是html template模板时
-	if (expression.test(template)) {
-		while (!scanner.eos()) {
-			start = scanner.pos
-			words = scanner.scanUtil('{{')
-			if (words && isChineseChar(words)) {
-				tokens.push({
-					type: 'text',
-					text: words,
-					start,
-					end: scanner.pos
-				})
-			}
-			scanner.scan('{{')
-			start = scanner.pos
-			words = scanner.scanUtil('}}')
-			if (words && isChineseChar(words) && !words.includes('|')) {
-				tokens.push({
-					type: 'html-params',
-					text: words,
-					start,
-					end: scanner.pos
-				})
-			}
-			scanner.scan('}}')
-		}
-		return tokens
-	}
-	// 其他情况，寻找引号标签包裹的中文
+	let status
 	let token = ''
 	let tokenpos = 0
 	let exp = ''
-	let exppos = 0
 	let idx = 0
 	let params = []
 	let ignore = false
-	const keywords = []
 	// 查找关键字
-	words = scanner.scanUtil(keys)
+	words = scanner.scanUtil(KEYWORD)
+	start = scanner.pos
+	keyword = scanner.keyword
 	// 没有查询到任何关键字或者关键字前包含中文，都按全段文字为中文处理
-	if (!scanner.keyword || isChineseChar(words)) {
+	if (!keyword || (isChineseChar(words) && keyword !== '{{')) {
 		const zhMatch = template.match(chinese)
 		while (zhMatch && zhMatch.length) {
 			const char = zhMatch.shift()
@@ -75,53 +51,62 @@ export default function parseTemplate (template) {
 		}
 		return tokens
 	}
-	keywords.push(scanner.keyword)
-	tokenpos = scanner.pos
+
 	while (!scanner.eos()) {
-		// 查找关键字
-		scanner.scan()
-		words = scanner.scanUtil(keys)
-		if (words.slice(-1) === '\\') {
-			if (!exppos) token += words + scanner.keyword
-			else exp += words + scanner.keyword
-			continue
+		start = scanner.pos
+		keyword = scanner.keyword
+		status = updateKeywordStack(keyword)
+		if (!token) {
+			tokenpos = start
 		}
-		// 匹配到console.log，忽略至)字符的位置的所有字符
-		if (scanner.keyword === 'console.log') {
+		// 需要忽略注释及console.log的中文
+		if ([ '//', '/**' ].includes(keyword)) {
 			ignore = true
+		}
+		// 如果关键字前一个字符为转义符，则不是需要找的关键字，继续向后查询
+		if (token.slice(-1) === '\\') {
+			scanner.scan()
+			token += scanner.keyword + scanner.scanUtil(KEYWORD)
 			continue
 		}
-		if (!keywords.length && scanner.keyword) {
-			// 匹配到开始标签，初始化数据
-			const matchKey = keysMatch[scanner.keyword]
-			matchKey && keywords.push(scanner.keyword)
-			tokenpos = scanner.pos
-			token = ''
-			exp = ''
-			exppos = 0
-			params = []
-			continue
-		} else if (keywords.length) {
-			if (!exppos) token += words
-			else exp += words
-			let last = keywords[keywords.length - 1]
-			const matchKey = keysMatch[scanner.keyword]
-			if (keysMatch[last] !== scanner.keyword) matchKey && keywords.push(scanner.keyword)
-			else keywords.pop()
-		}
-		if (ignore && scanner.keyword === ')' && !keywords.length) {
-			ignore = false
-			continue
-		}
-		// 匹配到${，说明开始匹配模板变量
-		if (!exppos && scanner.keyword === '${') {
+		// 匹配到ES6模板语法的参数起始，开始记录参数
+		if (keyword === '${' && !exp) {
 			token += '{'
-			exppos = scanner.pos + 2
+			scanner.scan()
+			exp = scanner.scanUtil(KEYWORD)
 			continue
 		}
-		// 匹配到模板变量结束
-		if (scanner.keyword === '}' && keywords.every(item => item !== '${')) {
-			if (exp) {
+		// 匹配到vue的模板语法
+		if (keyword === '{{' && words && isChineseChar(words)) {
+			tokens.push({
+				type: 'text',
+				text: words,
+				start: start - words.length,
+				end: start
+			})
+			scanner.scan()
+			tokenpos = scanner.pos
+			token = scanner.scanUtil('}}')
+			continue
+		}
+		// 不是在引号内部的不处理
+		if (keyword === '(' && !isKeywordsInStack(QUOTE)) {
+			ignore = words.includes('console.log')
+			scanner.scan()
+			scanner.scanUtil(KEYWORD)
+			continue
+		}
+		// 匹配到引号起始位置
+		if (QUOTE.includes(keyword) && status === 'start' && !isKeywordsInStack(QUOTE, 0, keywordStack.length - 1)) {
+			tokenpos = scanner.pos
+			scanner.scan()
+			words = scanner.scanUtil(KEYWORD)
+			token = words
+			continue
+		}
+		// 匹配到结束关键字
+		if (status === 'end') {
+			if (keyword === '}' && exp && !isKeywordsInStack('${')) {
 				const isSimple = vname.test(exp.trim())
 				const name = isSimple ? exp : `value${idx++}`
 				params.push({
@@ -129,25 +114,57 @@ export default function parseTemplate (template) {
 					value: isSimple ? null : exp.trim()
 				})
 				exp = ''
-				exppos = 0
-				token += name + '}'
-			} else {
-				// 存在匹配完成之后剩余的 } 字符
-				token += '}'
+				token += name
+			}
+			if (!ignore && token && isChineseChar(token) && !isKeywordsInStack(QUOTE)) {
+				const type = params.length ? 'template' : keyword === '}}' ? 'param' : 'string'
+				tokens.push({
+					type,
+					text: token,
+					start: tokenpos,
+					end: scanner.pos + ((type !== 'param' && 1) || 0),
+					...(type === 'template' && { params })
+				})
+				token = ''
+				tokenpos = 0
+			}
+			if ([ ')', '\r\n', '*/' ].includes(keyword)) {
+				ignore = false
 			}
 		}
-		// 匹配到标签闭合时：
-		if (!keywords.length && token && isChineseChar(token)) {
-			tokens.push({
-				type: scanner.keyword === '`' ? 'template' : 'string',
-				text: token,
-				start: tokenpos,
-				end: scanner.pos + scanner.keyword.length,
-				params
-			})
-			token = ''
+		scanner.scan()
+		words = scanner.scanUtil(KEYWORD)
+		if (!ignore) {
+			if (exp) {
+				exp += keyword + words
+			} else {
+				token += keyword + words
+			}
 		}
-		if (exppos) exp += scanner.keyword
 	}
 	return tokens
+
+	function updateKeywordStack (keyword) {
+		const keyMatch = MATCH_KEYWORD[keyword]
+		const len = keywordStack.length
+		if (!len) {
+			keyMatch && keywordStack.push(keyword)
+			return 'start'
+		}
+		const last = keywordStack[len - 1]
+		if (MATCH_KEYWORD[last] !== keyword) {
+			keyMatch && keywordStack.push(keyword)
+			return 'start'
+		} else {
+			keywordStack.pop()
+			return 'end'
+		}
+	}
+	function isKeywordsInStack (keywords, start = 0, end = keywordStack.length) {
+		if (typeof keywords === 'string') {
+			keywords = [ keywords ]
+		}
+		const stack = keywordStack.slice(start, end)
+		return stack.some(item => keywords.includes(item))
+	}
 }

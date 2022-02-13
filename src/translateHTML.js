@@ -108,7 +108,7 @@ export default function translateHTML (code, languageUtils, exportName) {
 	function handleReplaceChineseChar (text, start, isTemplate = true) {
 		const tokens = parseTemplate(text)
 		tokens.forEach(token => {
-			if (token.type === 'html-params') {
+			if (token.type === 'param') {
 				handleReplaceChineseChar(token.text, start + token.start, false)
 			} else {
 				isTemplate = isTemplate && token.type === 'text'
