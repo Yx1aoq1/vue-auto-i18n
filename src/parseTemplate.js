@@ -1,4 +1,4 @@
-import Scanner from './scanner'
+import { Scanner } from './scanner'
 import { isChineseChar, codeReplace } from './utils/common'
 
 const chinese = /[^\x00-\xff]+.*/g

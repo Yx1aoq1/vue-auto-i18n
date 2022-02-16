@@ -41,7 +41,7 @@ function isIgnore (code) {
 	return code.includes('i18nIgnore')
 }
 
-export default class LanguageUtils {
+export class LanguageUtils {
 	constructor (lang) {
 		this.cfg = USER_CONFIG
 		this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang + '/')

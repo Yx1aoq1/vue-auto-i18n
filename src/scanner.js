@@ -1,4 +1,4 @@
-export default class Scanner {
+export class Scanner {
 	constructor (templateStr) {
 		this.templateStr = templateStr
 		this.pos = 0
