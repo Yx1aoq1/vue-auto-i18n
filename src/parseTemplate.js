@@ -86,21 +86,23 @@ export function parseTemplate (template) {
 			}
 			// ES6模板语法匹配
 			if (keyword === '`' && !isExp) {
-				const paramsTokens = params.map(item => {
-					return {
-						start: item.start - matched.pos - 1,
-						end: item.end - matched.pos - 1,
-						name: `{${item.name}}`
-					}
-				})
-				tokens.push({
-					type: params.length ? 'template' : 'string',
-					text: codeReplace(token, paramsTokens, item => item.name),
-					start: matched.pos,
-					end,
-					params,
-					origin: token
-				})
+				if (isChineseChar(token)) {
+					const paramsTokens = params.map(item => {
+						return {
+							start: item.start - matched.pos - 1,
+							end: item.end - matched.pos - 1,
+							name: `{${item.name}}`
+						}
+					})
+					tokens.push({
+						type: params.length ? 'template' : 'string',
+						text: codeReplace(token, paramsTokens, item => item.name),
+						start: matched.pos,
+						end,
+						params,
+						origin: token
+					})
+				}
 				params = []
 			}
 			// ES6模板语法中的参数匹配
