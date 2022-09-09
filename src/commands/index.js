@@ -9,6 +9,6 @@ fs.readdirSync(__dirname)
     commands.push(command)
   })
 
-export default function run (program) {
+export default function run(program) {
   commands.forEach(command => command(program))
 }

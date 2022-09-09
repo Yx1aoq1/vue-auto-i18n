@@ -3,14 +3,14 @@ import fs from 'fs'
 
 const cwd = process.cwd()
 
-function getConfigFile (file) {
+function getConfigFile(file) {
   return fs.existsSync(path.join(cwd, file)) ? path.join(cwd, file) : false
 }
 
 /**
  * 获取用户配置文件
  */
-export default function getConfig () {
+export default function getConfig() {
   let cfg = {}
   const configPath = getConfigFile(global.CONFIG_FILE_NAME)
   if (configPath) {
