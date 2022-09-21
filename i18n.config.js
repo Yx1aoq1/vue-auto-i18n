@@ -3,7 +3,7 @@ module.exports = {
   languages: ['zh-cn', 'en'],
   sourceLanguage: 'zh-cn',
   enabledParsers: ['js', 'json'],
-  localesPaths: './demo/locale',
+  localesPaths: ['test/vue/locale'],
   outputlocalesPath: './output/locale',
   namespace: true,
   pathMatcher: '{locale}/{namespaces}.{ext}',

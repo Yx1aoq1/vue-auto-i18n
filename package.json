@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "nodemon --watch src --exec npm run command",
-    "command": "babel-node ./index.js getlang ./test/vueTemp/ test",
+    "command": "babel-node ./index.js getlang ./test/vue/temp/ test",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",
@@ -17,7 +17,8 @@
     "chalk": "^4.1.2",
     "commander": "^8.2.0",
     "dayjs": "^1.10.7",
-    "lodash.clonedeep": "^4.5.0",
+    "fast-glob": "^3.2.12",
+    "lodash": "^4.17.21",
     "node-xlsx": "^0.17.2",
     "vue-sfc-descriptor-stringify": "^0.1.0",
     "vue-template-compiler": "^2.6.14"

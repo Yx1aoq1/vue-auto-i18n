@@ -6,7 +6,7 @@ import translateHTML from './translateHTML'
 import translateJS from './translateJS'
 import * as vueCompiler from 'vue-template-compiler'
 import Stringify from 'vue-sfc-descriptor-stringify'
-import cloneDeep from 'lodash.clonedeep'
+import { cloneDeep } from 'lodash'
 
 function handleVueCode(code, languageUtils, exportName) {
   const originSfcDescriptor = vueCompiler.parseComponent(code)
@@ -43,9 +43,7 @@ function isIgnore(code) {
 
 export class LanguageUtils {
   constructor(lang) {
-    this.cfg = USER_CONFIG
-    this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang + '/')
-    this.map = this.createMap()
+    // this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang + '/')
   }
 
   createMap() {

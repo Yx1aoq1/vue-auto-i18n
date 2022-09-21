@@ -12,7 +12,7 @@ function findExcelColLang(cfg, name) {
 function parseExcelDatas(data) {
   return data.shift().reduce((res, name, idx) => {
     if (name !== 'key') {
-      const lang = findExcelColLang(USER_CONFIG, name) || `unknow_${idx}`
+      const lang = findExcelColLang(Config, name) || `unknow_${idx}`
       res[lang] = unflatten(
         data.reduce((target, item) => {
           const key = item[0]
@@ -51,7 +51,7 @@ export default function exceltojs(program) {
       }
       try {
         const sheets = xlsx.parse(fs.readFileSync(excelpath))
-        const basePath = path.resolve(process.cwd(), USER_CONFIG.outputLanguagePath || DEFAULT_OUTPUT_PATH)
+        const basePath = path.resolve(process.cwd(), Config.outputLanguagePath || DEFAULT_OUTPUT_PATH)
         generateJSFromSheets(basePath, sheets)
         logger.success(`解析excel文件成功，已导出文件至目录${basePath}`)
       } catch (err) {

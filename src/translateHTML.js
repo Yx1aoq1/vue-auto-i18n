@@ -34,7 +34,7 @@ export default function translateHTML(html, languageUtils, exportName) {
   })
 
   const handleToken =
-    USER_CONFIG.translateHTMLFun ||
+    Config.translateHTMLFun ||
     function (token, isInTemplate) {
       let value
       if (token.type === 'chars') {

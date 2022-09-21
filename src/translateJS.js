@@ -5,7 +5,7 @@ export default function translateJS(code, languageUtils, exportName, isVue = tru
   let isImportI18nFun = false
   const exportLocation = code.indexOf('export')
   const handleToken =
-    USER_CONFIG.translateJSFun ||
+    Config.translateJSFun ||
     function (token, isInVue) {
       if (isInVue === undefined) {
         isInVue = isVue && token.start > exportLocation
@@ -26,9 +26,9 @@ export default function translateJS(code, languageUtils, exportName, isVue = tru
     }
   code = codeReplace(code, parseTemplate(code), handleToken)
   // 是否引入i18n函数
-  if (isImportI18nFun && USER_CONFIG.importI18nFunction) {
+  if (isImportI18nFun && Config.importI18nFunction) {
     const start = isVue ? 2 : 0 // vue 文件中首个字符通常为换行
-    code = splice(code, start, start, `${USER_CONFIG.importI18nFunction}\r\n`)
+    code = splice(code, start, start, `${Config.importI18nFunction}\r\n`)
   }
   return code
 }

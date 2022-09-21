@@ -60,7 +60,7 @@ export default function toexcel(program) {
     .description('将i18n文件转成excel')
     .action((jspath = '', { exportName = 'translate', exportDir = './' }) => {
       let filepath
-      const langPaths = initLanguagePaths(USER_CONFIG)
+      const langPaths = initLanguagePaths(Config)
       const langs = Object.keys(langPaths)
       if (!jspath) {
         filepath = langPaths['zh-cn'] || langPaths[langs[0]]
@@ -80,7 +80,7 @@ export default function toexcel(program) {
       // 单文件处理
       if (extname === 'js') {
         const name = getFilenameWithoutExt(filepath)
-        const data = generateExcelData(USER_CONFIG, name, {
+        const data = generateExcelData(Config, name, {
           unknow: filepath,
         })
         buildDatas.push({
@@ -106,7 +106,7 @@ export default function toexcel(program) {
                 return target
               }, {})
             }
-            const data = generateExcelData(USER_CONFIG, name, paths)
+            const data = generateExcelData(Config, name, paths)
             buildDatas.push({
               name,
               data,
