@@ -40,3 +40,5 @@ global.DEFAULT_EXCEL_COLS = {
 global.DEFAULT_OUTPUT_PATH = './output/locale'
 // 默认导出的格式
 global.DEFAULT_EXPORT_FILE_TYPE = 'js'
+// 可处理的文件拓展名
+global.ENABLE_EXTNAME = ['vue', 'js', 'html', 'ts']

@@ -18,14 +18,14 @@ export default function getlang(program) {
       }
       const extname = getExtname(filepath)
       // 单文件处理
-      if (['vue', 'js'].includes(extname)) {
+      if (global.ENABLE_EXTNAME.includes(extname)) {
         languageUtils.translate(filepath, exportName)
         languageUtils.getLocale(exportName)
       } else {
         // 文件夹处理
         travelDir(filepath, path => {
           const ext = getExtname(path)
-          if (['vue', 'js'].includes(ext)) {
+          if (global.ENABLE_EXTNAME.includes(ext)) {
             languageUtils.translate(path, exportName)
           }
         })

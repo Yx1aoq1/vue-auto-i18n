@@ -1,6 +1,11 @@
 module.exports = {
-  // languages: ['zh-cn', 'en'],
-  languagePath: './demo/locale',
-  outputLanguagePath: './output/locale',
-  importI18nFunction: 'import i18n from \'@/plugins/i18n\''
+  // 语言配置
+  languages: ['zh-cn', 'en'],
+  sourceLanguage: 'zh-cn',
+  enabledParsers: ['js', 'json'],
+  localesPaths: './demo/locale',
+  outputlocalesPath: './output/locale',
+  namespace: true,
+  pathMatcher: '{locale}/{namespaces}.{ext}',
+  importI18nFunction: "import i18n from '@/plugins/i18n'",
 }

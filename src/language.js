@@ -106,6 +106,9 @@ export class LanguageUtils {
     const code = fs.readFileSync(filepath, 'utf-8')
     let newCode
     switch (extname) {
+      case 'html':
+        newCode = handleTemplateCode(code, this, name)
+        break
       case 'vue':
         newCode = handleVueCode(code, this, name)
         break
