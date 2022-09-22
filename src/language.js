@@ -42,7 +42,7 @@ function isIgnore(code) {
 }
 
 export class LanguageUtils {
-  constructor(lang) {
+  constructor() {
     // this.langPath = path.resolve(process.cwd(), this.cfg.outputLanguagePath, lang + '/')
   }
 

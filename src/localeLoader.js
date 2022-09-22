@@ -4,8 +4,8 @@ import { uniq } from 'lodash'
 import { ParsePathMatcher } from './utils/pathMatcher'
 
 export class LocaleLoader {
-  constructor() {
-    this.rootpath = process.cwd()
+  constructor(rootpath) {
+    this.rootpath = rootpath
   }
 
   async init() {
@@ -13,7 +13,6 @@ export class LocaleLoader {
       this._path_matchers = this.getPathMatchers()
       await this.loadAll()
     }
-    // this.update()
   }
 
   async findLocaleDirs() {
