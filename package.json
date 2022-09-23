@@ -1,5 +1,5 @@
 {
-  "name": "@ws/vue-auto-i18n",
+  "name": "@ws/auto-i18n",
   "version": "1.0.2",
   "description": "vue替换中文i18n工具",
   "bin": {

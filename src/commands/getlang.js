@@ -1,14 +1,15 @@
 import fs from 'fs'
-import { LanguageUtils } from '../language'
+import { Global } from '../global'
+import { Translater } from '../translater'
 import { getExtname } from '../utils/common'
 import { travelDir } from '../utils/fs'
 
 export default function getlang(program) {
   program
-    .command('getlang <filepath> <exportName> [lang]')
+    .command('getlang <filepath> <exportName>')
     .description('对<filepath>文件进行中文提取，提取至<exportName>文件中')
-    .action((filepath, exportName, lang = 'zh-cn') => {
-      const languageUtils = new LanguageUtils(lang)
+    .action(async (filepath, exportName) => {
+      const translater = await Translater.create()
       // 验证目录存在
       try {
         fs.accessSync(filepath, fs.constants.F_OK)
@@ -18,19 +19,15 @@ export default function getlang(program) {
       }
       const extname = getExtname(filepath)
       // 单文件处理
-      if (global.ENABLE_EXTNAME.includes(extname)) {
-        languageUtils.translate(filepath, exportName)
-        languageUtils.getLocale(exportName)
+      if (Global.enableTransExts.includes(extname)) {
       } else {
         // 文件夹处理
         travelDir(filepath, path => {
           const ext = getExtname(path)
-          if (global.ENABLE_EXTNAME.includes(ext)) {
-            languageUtils.translate(path, exportName)
+          if (Global.enableTransExts.includes(ext)) {
           }
         })
-        languageUtils.getLocale(exportName)
       }
-      logger.success(`已生成 ${exportName} 文件并导出至 ${languageUtils.langPath} 目录`)
+      // logger.success(`已生成 ${exportName} 文件并导出至 ${languageUtils.langPath} 目录`)
     })
 }

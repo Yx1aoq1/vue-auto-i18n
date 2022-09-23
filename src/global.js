@@ -1,44 +1,51 @@
-import chalk from 'chalk'
-import dayjs from 'dayjs'
-// logger
-const info = console.info
-global.logger = {
-  log: console.log,
-  success: function () {
-    info(chalk.green(' √ ' + [].slice.call(arguments).join(' ')))
-  },
-  warn: function () {
-    info(chalk.yellow(' ∆ ' + [].slice.call(arguments).join(' ')))
-  },
-  error: function () {
-    info(chalk.bold.red(' X '), chalk.bold.red([].slice.call(arguments).join(' ')))
-  },
-  info: function () {
-    console.log(chalk.cyan('[vue-auto-i18n] '), [].slice.call(arguments).join(' '))
-  },
-  logWithTime: function () {
-    info(
-      chalk.cyan('[vue-auto-i18n] ') +
-        ' [' +
-        dayjs().format('YY.MM.DD HH:mm:ss') +
-        '] ' +
-        [].slice.call(arguments).join(' ')
-    )
-  },
+import getConfig from './utils/config'
+import { ParsePathMatcher } from './utils/pathMatcher'
+import { uniq } from 'lodash'
+import { extname } from 'path'
+import { AvailableParsers } from './parsers'
+
+const Config = getConfig()
+export class Global {
+  // 默认导出excel列名
+  static excelCols = {
+    'zh-cn': '中文',
+    en: '英文翻译',
+    unknow: '未知',
+  }
+  // 可处理的文件拓展名
+  static enableTransExts = ['vue', 'js', 'html', 'ts']
+  // locales对应的文件夹名称
+  static languages = Config.languages || ['zh-cn', 'en']
+  // 默认导出对应的语言
+  static sourceLanguage = Config.languages || 'zh-cn'
+  // 读取locales配置时对应的拓展名
+  static enabledParsers = AvailableParsers.filter(i => (Config.enabledParsers || ['js', 'json']).includes(i.id))
+  // locales配置的文件夹路径
+  static localesPaths = Config.localesPaths
+  // 导出翻译的文件夹路径
+  static outputLocalesPath = Config.outputLocalesPath
+  // 是否有命名空间
+  static namespace = Config.namespace || false
+  // locales文件匹配
+  static pathMatcher = Config.pathMatcher
+  // 导入的i18n函数string
+  static importI18nFunction = Config.importI18nFunction
+  //
+  static ignoreFiles = Config.ignoreFiles || []
+  //
+  static includeSubfolders = Config.includeSubfolders
+  //
+  static getPathMatchers() {
+    const rules = Array.isArray(Config.pathMatcher) ? Config.pathMatcher : [Config.pathMatcher]
+    const enabledParserExts = Global.enabledParsers.map(item => item.id).join('|')
+    return uniq(rules).map(matcher => ({
+      regex: ParsePathMatcher(matcher, enabledParserExts),
+      matcher,
+    }))
+  }
+  //
+  static getMatchedParser(ext) {
+    if (!ext.startsWith('.') && ext.includes('.')) ext = extname(ext)
+    return Global.enabledParsers.find(parser => parser.supports(ext))
+  }
 }
-// 配置文件名称
-global.CONFIG_FILE_NAME = 'i18n.config.js'
-// 默认中文翻译读取配置地址
-global.DEFAULT_LANGUAGES = ['zh-cn', 'en']
-// 默认导出excel列名
-global.DEFAULT_EXCEL_COLS = {
-  'zh-cn': '中文',
-  en: '英文翻译',
-  unknow: '未知',
-}
-// 默认导出的路径
-global.DEFAULT_OUTPUT_PATH = './output/locale'
-// 默认导出的格式
-global.DEFAULT_EXPORT_FILE_TYPE = 'js'
-// 可处理的文件拓展名
-global.ENABLE_EXTNAME = ['vue', 'js', 'html', 'ts']

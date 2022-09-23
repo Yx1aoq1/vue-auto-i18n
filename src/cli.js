@@ -1,4 +1,4 @@
-import './global'
+import './utils/logger'
 import commands from './commands'
 import program from 'commander'
 import { version } from '../package.json'
