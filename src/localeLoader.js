@@ -2,10 +2,12 @@ import fg from 'fast-glob'
 import path from 'path'
 import { uniq } from 'lodash'
 import { Global } from './global'
+import { flatten } from './utils/flat'
 
 export class LocaleLoader {
   constructor(rootpath) {
     this.rootpath = rootpath
+    this._files = {}
   }
 
   async init() {
@@ -65,6 +67,15 @@ export class LocaleLoader {
       if (!locale) return
       if (namespace === 'index') return
       let data = await parser.load(filepath)
+      const value = flatten(data)
+      this._files[filepath] = {
+        filepath,
+        dirpath,
+        locale,
+        value,
+        namespace,
+        matcher,
+      }
     } catch (e) {
       logger.error(e)
     }
@@ -107,4 +118,6 @@ export class LocaleLoader {
       matcher,
     }
   }
+
+  findMatchKey(text, namespace = '') {}
 }
