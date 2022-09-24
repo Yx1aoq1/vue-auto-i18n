@@ -2,39 +2,25 @@
 // {namespaces}/{lang}.json
 // {lang}/{namespace}/**/*.json
 // something/{lang}/{namespace}/**/*.*
-export function ParsePathMatcher(pathMatcher, exts = '') {
-  let regstr = pathMatcher
-    .replace(/\./g, '\\.')
-    .replace('.*', '..*')
-    .replace('*\\.', '.*\\.')
-    .replace(/\/?\*\*\//g, '(?:.*/|^)')
-    .replace('{locale}', '(?<locale>[\\w-_]+)')
-    .replace('{locale?}', '(?<locale>[\\w-_]*?)')
-    .replace('{namespace}', '(?<namespace>[^/\\\\]+)')
-    .replace('{namespace?}', '(?<namespace>[^/\\\\]*?)')
-    .replace('{namespaces}', '(?<namespace>.+)')
-    .replace('{namespaces?}', '(?<namespace>.*?)')
-    .replace('{ext}', `(?<ext>${exts})`)
+export function ParsePathMatcher (pathMatcher, exts = '') {
+	let regstr = pathMatcher
+		.replace(/\./g, '\\.')
+		.replace('.*', '..*')
+		.replace('*\\.', '.*\\.')
+		.replace(/\/?\*\*\//g, '(?:.*/|^)')
+		.replace('{locale}', '(?<locale>[\\w-_]+)')
+		.replace('{locale?}', '(?<locale>[\\w-_]*?)')
+		.replace('{namespace}', '(?<namespace>[^/\\\\]+)')
+		.replace('{namespace?}', '(?<namespace>[^/\\\\]*?)')
+		.replace('{namespaces}', '(?<namespace>.+)')
+		.replace('{namespaces?}', '(?<namespace>.*?)')
+		.replace('{ext}', `(?<ext>${exts})`)
 
-  regstr = `^${regstr}$`
+	regstr = `^${regstr}$`
 
-  return new RegExp(regstr)
+	return new RegExp(regstr)
 }
 
-export function ReplaceLocale(filepath, pathMatcher, locale, exts = '') {
-  let regstr = pathMatcher
-    .replace(/\./g, '\\.')
-    .replace('.*', '..*')
-    .replace('*\\.', '.*\\.')
-    .replace(/\/?\*\*\//g, '(?:.*/|^)')
-    .replace('{locale}', ')[\\w-_]+(')
-    .replace('{namespace}', '(?:[^/\\\\]+)')
-    .replace('{namespace?}', '(?:[^/\\\\]*?)')
-    .replace('{namespaces}', '(?:.+)')
-    .replace('{namespaces?}', '(?:.*?)')
-    .replace('{ext}', `(?<ext>${exts})`)
-
-  regstr = `^(${regstr})$`
-
-  return filepath.replace(new RegExp(regstr), `$1${locale}$2`)
+export function ReplacePatchMatcher (pathMatcher, { locale, namespace, ext }) {
+	return pathMatcher.replace('{locale}', locale).replace('{namespace}', namespace).replace('{ext}', ext)
 }

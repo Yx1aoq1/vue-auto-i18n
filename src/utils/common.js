@@ -1,56 +1,52 @@
-export function isObject(obj) {
-  return Object.prototype.toString.call(obj) === '[object Object]'
+export function getExtname (path) {
+	const filenameWithoutSuffix = path.split(/#|\?/)[0]
+	return (/[^./\\]*$/.exec(filenameWithoutSuffix) || [ '' ])[0]
 }
 
-export function getExtname(path) {
-  const filenameWithoutSuffix = path.split(/#|\?/)[0]
-  return (/[^./\\]*$/.exec(filenameWithoutSuffix) || [''])[0]
-}
-
-export function getFilenameWithoutExt(path) {
-  const files = path.split(/\/|\\/)
-  const filename = files.length ? files[files.length - 1] : ''
-  return filename.split('.')[0]
+export function getFilenameWithoutExt (path) {
+	const files = path.split(/\/|\\/)
+	const filename = files.length ? files[files.length - 1] : ''
+	return filename.split('.')[0]
 }
 
 /**
  * 是否含有中文（也包含日文和韩文）
  * @param {*} str
  */
-export function isChineseChar(str) {
-  var reg = /[\u4E00-\u9FA5\uF900-\uFA2D]/
-  return reg.test(str)
+export function isChineseChar (str) {
+	var reg = /[\u4E00-\u9FA5\uF900-\uFA2D]/
+	return reg.test(str)
 }
 
 /**
  * 随机字符串
  */
-export function getRandomStr() {
-  return Math.random().toString(36).slice(2)
+export function getRandomStr () {
+	return Math.random().toString(36).slice(2)
 }
 
 /**
  * Make a map and return a function for checking if a key
  * is in that map.
  */
-export function makeMap(str, expectsLowerCase) {
-  const map = Object.create(null)
-  const list = str.split(',')
-  for (let i = 0; i < list.length; i++) {
-    map[list[i]] = true
-  }
-  return expectsLowerCase ? val => map[val.toLowerCase()] : val => map[val]
+export function makeMap (str, expectsLowerCase) {
+	const map = Object.create(null)
+	const list = str.split(',')
+	for (let i = 0; i < list.length; i++) {
+		map[list[i]] = true
+	}
+	return expectsLowerCase ? val => map[val.toLowerCase()] : val => map[val]
 }
 
-export function once(fn, context) {
-  var result
-  return function () {
-    if (fn) {
-      result = fn.apply(context || this, arguments)
-      fn = null
-    }
-    return result
-  }
+export function once (fn, context) {
+	var result
+	return function () {
+		if (fn) {
+			result = fn.apply(context || this, arguments)
+			fn = null
+		}
+		return result
+	}
 }
 
 /**
@@ -61,8 +57,8 @@ export function once(fn, context) {
  * @param {*} replace
  * @returns
  */
-export function splice(soure, start, end, replace) {
-  return soure.slice(0, start) + replace + soure.slice(end)
+export function splice (soure, start, end, replace) {
+	return soure.slice(0, start) + replace + soure.slice(end)
 }
 
 /**
@@ -72,13 +68,13 @@ export function splice(soure, start, end, replace) {
  * @param {*} callback
  * @returns
  */
-export function codeReplace(origin, tokens, callback) {
-  let code = origin
-  let offset = 0
-  tokens.forEach(token => {
-    code = splice(code, token.start + offset, token.end + offset, callback(token))
-    offset = code.length - origin.length
-    // console.log('code', code)
-  })
-  return code
+export function codeReplace (origin, tokens, callback) {
+	let code = origin
+	let offset = 0
+	tokens.forEach(token => {
+		code = splice(code, token.start + offset, token.end + offset, callback(token))
+		offset = code.length - origin.length
+		// console.log('code', code)
+	})
+	return code
 }
