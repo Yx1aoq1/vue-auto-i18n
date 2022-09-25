@@ -21,7 +21,8 @@ function generateExcelData (localeLoader, namespace) {
 				keypath
 			})
 		})
-		data.push([ `${namespace}.${keypath}`, ...trans ])
+		const key = namespace ? `${namespace}.${keypath}` : keypath
+		data.push([ key, ...trans ])
 	})
 	return data
 }
@@ -58,7 +59,7 @@ export default function toexcel (program) {
 				})
 			} else {
 				buildDatas.push({
-					name: namespace,
+					name: 'auto-i18n-sheet',
 					data: generateExcelData(localeLoader)
 				})
 			}
