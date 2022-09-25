@@ -1,9 +1,9 @@
 import fg from 'fast-glob'
 import path from 'path'
-import { uniq, set, find } from 'lodash'
+import { uniq, set, find, cloneDeep, first } from 'lodash'
 import { Global } from './global'
 import { flatten, unflatten } from './utils/flat'
-import { getRandomStr } from './utils/common'
+import { getRandomStr, getExtname } from './utils/common'
 
 export class LocaleLoader {
 	constructor (rootpath) {
@@ -15,7 +15,7 @@ export class LocaleLoader {
 			this._pathMatchers = Global.getPathMatchers()
 			await this.loadAll()
 		}
-		this.updateLocalesData()
+		this.update()
 	}
 
 	async findLocaleDirs () {
@@ -122,7 +122,7 @@ export class LocaleLoader {
 		}
 	}
 
-	updateLocalesData () {
+	update () {
 		this._flattenLocaleData = {}
 		this.files = Object.values(this._files)
 		if (Global.namespace) {
@@ -132,17 +132,17 @@ export class LocaleLoader {
 
 				for (const file of files) {
 					const value = ns ? set({}, ns, file.value) : file.value
-					this.update(value, file)
+					this.updateLocaleData(value, file)
 				}
 			}
 		} else {
 			for (const file of this.files) {
-				this.update(value, file)
+				this.updateLocaleData(value, file)
 			}
 		}
 	}
 
-	update (data, options) {
+	updateLocaleData (data, options) {
 		const { namespace, locale } = options
 		set(this._flattenLocaleData, locale, data)
 	}
@@ -158,8 +158,59 @@ export class LocaleLoader {
 		}
 		const newKey = this.generateLocaleKey(text)
 		const localeKey = namespace ? `${namespace}.${newKey}` : `${locale}.${newKey}`
-		set(this._flattenLocaleData, localeKey, text)
+		this.write({ key: newKey, text, namespace, locale })
 		return localeKey
+	}
+
+	write ({ key, text, namespace, locale }) {
+		const { filepath } = find(this.files, { namespace, locale }) || {}
+		let original = {}
+		if (this._files[filepath]) {
+			original = this._files[filepath].value
+		}
+		let modified = cloneDeep(original)
+		set(modified, key, text)
+		// 已存在文件时，更新文件内容
+		if (this._files[filepath]) {
+			this._files[filepath].value = modified
+		} else {
+			// 不存在文件，需要创建一个新文件
+			this.createNewLocaleFile(locale, namespace, modified)
+		}
+		this.update()
+	}
+
+	createNewLocaleFile (locale, namespace, data) {
+		if (!locale) return
+		// 获取已查询出的locale目录下的第一个文件作为范本
+		const file = first(this.files)
+		const dirpath = file.dirpath
+		const ext = getExtname(file.filepath)
+		const relativePath = Global.pathMatcher
+			.replace('{locale}', locale)
+			.replace('{namespace}', namespace)
+			.replace('{namespaces}', namespace)
+			.replace('{ext}', ext)
+		const result = this.getFileInfo(dirpath, relativePath)
+		if (!result) return
+		const { fullpath: filepath, matcher } = result
+		this._files[filepath] = {
+			filepath,
+			dirpath,
+			locale,
+			value: data,
+			namespace,
+			matcher
+		}
+	}
+
+	async export () {
+		for (const file of this.files) {
+			const { filepath, value } = file
+			const ext = path.extname(filepath)
+			const parser = Global.getMatchedParser(ext)
+			await parser.save(filepath, unflatten(value))
+		}
 	}
 
 	generateLocaleKey (text) {

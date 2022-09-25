@@ -131,7 +131,6 @@ export class Translator {
 					value = _self.stringToIdentifier(token.text, namespace, params, type)
 					break
 			}
-			logger.info(`replace: ${token.text || token.value} ---> ${value}`)
 			return value
 		}
 		let newCode
@@ -155,7 +154,9 @@ export class Translator {
 			default:
 				return
 		}
-		replace && exportFile(filepath, newCode, { flag: 'w' })
+		if (replace) {
+			exportFile(filepath, newCode, { flag: 'w' })
+		}
 	}
 
 	stringToIdentifier (text, namespace, params, type) {
@@ -188,5 +189,9 @@ export class Translator {
 		}
 		logger.info('\n⚠ stringToIdentifier undefined.')
 		return text
+	}
+
+	async getLocales () {
+		await this.localeLoader.export()
 	}
 }

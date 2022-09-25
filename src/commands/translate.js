@@ -21,15 +21,17 @@ export default function transalte (program) {
 			// 单文件处理
 			if (Global.enableTransExts.includes(extname)) {
 				translator.translate(filepath, namespace, true)
+				translator.getLocales()
 			} else {
 				// 文件夹处理
 				travelDir(filepath, path => {
 					const ext = getExtname(path)
 					if (Global.enableTransExts.includes(ext)) {
 						translator.translate(path, namespace, true)
+						translator.getLocales()
 					}
 				})
 			}
-			logger.success('已成功替换中文，请自行检查代码')
+			logger.success('翻译已替换，请自行检查代码语法是否正确')
 		})
 }
