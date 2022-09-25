@@ -1,8 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import xlsx from 'node-xlsx'
-import { unflatten } from '../utils/common'
-import { exportLocale } from '../utils/fs'
 import { LocaleLoader } from '../localeLoader'
 import { Global } from '../global'
 
