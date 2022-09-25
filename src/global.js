@@ -22,10 +22,6 @@ export class Global {
 	static enabledParsers = AvailableParsers.filter(i => (Config.enabledParsers || [ 'js', 'json' ]).includes(i.id))
 	// locales配置的文件夹路径
 	static localesPaths = Config.localesPaths
-	// 导出翻译的文件夹路径
-	static outputLocalesPath = Config.outputLocalesPath
-	// 导出的文件格式
-	static outputPathMatcher = Config.outputPathMatcher || '{locale}/{namespace}.js'
 	// 是否有命名空间
 	static namespace = Config.namespace || false
 	// locales文件匹配
@@ -40,6 +36,10 @@ export class Global {
 	static repeatStrategy = Config.repeatStrategy || 'ignore'
 	// 生成locale key的方法
 	static generateLocaleKey = Config.generateLocaleKey
+	// 翻译解析模式
+	static translateMode = Config.translateMode || 'vue'
+	// 翻译语言生成
+	static stringToIdentifier = Config.stringToIdentifier
 	static getPathMatchers () {
 		const rules = Array.isArray(Config.pathMatcher) ? Config.pathMatcher : [ Config.pathMatcher ]
 		const enabledParserExts = Global.enabledParsers.map(item => item.id).join('|')

@@ -20,7 +20,3 @@ export function ParsePathMatcher (pathMatcher, exts = '') {
 
 	return new RegExp(regstr)
 }
-
-export function ReplacePatchMatcher (pathMatcher, { locale, namespace, ext }) {
-	return pathMatcher.replace('{locale}', locale).replace('{namespace}', namespace).replace('{ext}', ext)
-}

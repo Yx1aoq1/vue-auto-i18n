@@ -1,12 +1,14 @@
 import fs from 'fs'
 import { LocaleLoader } from './localeLoader'
-import { getExtname } from './utils/common'
-import { parseHTML } from './parseHTML'
+import { getExtname, codeReplace } from './utils/common'
+import { parseHTML } from './utils/parseHTML'
 import { isChineseChar } from './utils/common'
-import { parseTemplate } from './parseTemplate'
+import { parseTemplate } from './utils/parseTemplate'
 import { cloneDeep } from 'lodash'
 import * as vueCompiler from 'vue-template-compiler'
 import Stringify from 'vue-sfc-descriptor-stringify'
+import { Global } from './global'
+import { exportFile } from './utils/fs'
 export class Translator {
 	static async create () {
 		const localeLoader = new LocaleLoader(process.cwd())
@@ -23,21 +25,11 @@ export class Translator {
 	isIgnore (code) {
 		return code.includes('i18nIgnore')
 	}
-
-	replace (origin, tokens, callback) {
-		function splice (soure, start, end, replace) {
-			return soure.slice(0, start) + replace + soure.slice(end)
-		}
-		let code = origin
-		let offset = 0
-		tokens.forEach(token => {
-			code = splice(code, token.start + offset, token.end + offset, callback(token))
-			offset = code.length - origin.length
-			// console.log('code', code)
-		})
-		return code
-	}
-
+	/**
+	 * 解析html
+	 * @param {*} html 
+	 * @returns 
+	 */
 	parseHTML (html) {
 		const tokens = []
 		parseHTML(html, {
@@ -70,7 +62,11 @@ export class Translator {
 		})
 		return tokens
 	}
-
+	/**
+	 * 解析script
+	 * @param {*} html 
+	 * @returns 
+	 */
 	parseECMAScript (code) {
 		return parseTemplate(code)
 	}
@@ -93,9 +89,8 @@ export class Translator {
 				const script = sfcDescriptor.script.content
 				return {
 					extname,
-					origin: code,
-					template,
-					script,
+					originSfcDescriptor,
+					sfcDescriptor,
 					tokens: [ this.parseHTML(template), this.parseECMAScript(script) ]
 				}
 			case 'js':
@@ -110,33 +105,88 @@ export class Translator {
 		}
 	}
 
-	translate (filepath, namespace) {
-		const { extname, tokens, origin, template, script } = this.parse(filepath)
-		function handleToken (token, isHTMLChars = false, isVue = false) {
+	translate (filepath, namespace, replace = false) {
+		const { extname, tokens, origin, originSfcDescriptor, sfcDescriptor } = this.parse(filepath)
+		const _self = this
+		function handleToken (token, type = '') {
 			let value
 			const params = (token.params || []).map(item => ({
 				name: item.name,
-				value: item.expression && this.replace(item.expression, item.tokens, t => handleToken(t, false, isVue))
+				value: item.expression && codeReplace(item.expression, item.tokens, t => handleToken(t, 'template'))
 			}))
 			switch (token.type) {
 				// 由div包裹的纯文本
 				case 'chars':
-					value = this.replace(token.text, token.tokens, t => handleToken(t, true, isVue))
-					return value
-				case 'text':
-					return this.stringToIdentifier(namespace, token.text, params, isHTMLChars, isVue)
+					value = codeReplace(token.text, token.tokens, t => handleToken(t, t.type))
+					break
 				case 'attribute':
-					value = this.replace(token.value, token.tokens, t => handleToken(t, false, isVue))
-					if (isVueScript) return `${token.name[0] === ':' ? '' : ':'}${token.name}="${value}"`
+					value = codeReplace(token.value, token.tokens, t => handleToken(t, 'attribute'))
+					if (type === 'vueTemplate') {
+						value = `${token.name[0] === ':' ? '' : ':'}${token.name}="${value}"`
+					}
+					break
 				case 'string':
+				case 'text':
 				case 'template':
+					value = _self.stringToIdentifier(token.text, namespace, params, type)
+					break
 			}
+			logger.info(`replace: ${token.text || token.value} ---> ${value}`)
+			return value
 		}
-		if (extname === 'vue') {
-			const newTemplate = this.replace(template, tokens[0], t => handleToken(t))
-			const newScript = this.replace(template, tokens[1], t => handleToken(t, false, true))
-		} else {
-			const newCode = this.replace(origin, tokens, t => handleToken(t))
+		let newCode
+		switch (extname) {
+			case 'html':
+				newCode = codeReplace(origin, tokens, t => handleToken(t, 'html'))
+				break
+			case 'vue':
+				sfcDescriptor.template.content = codeReplace(sfcDescriptor.template.content, tokens[0], t =>
+					handleToken(t, 'vueTemplate')
+				)
+				sfcDescriptor.script.content = codeReplace(sfcDescriptor.script.content, tokens[1], t =>
+					handleToken(t, 'vueScript')
+				)
+				newCode = Stringify(sfcDescriptor, originSfcDescriptor)
+				break
+			case 'js':
+			case 'ts':
+				newCode = codeReplace(origin, tokens, t => handleToken(t, 'script'))
+				break
+			default:
+				return
 		}
+		replace && exportFile(filepath, newCode, { flag: 'w' })
+	}
+
+	stringToIdentifier (text, namespace, params, type) {
+		const localeKey = this.localeLoader.findMatchLocaleKey(text, namespace)
+		const param = params
+			.map(item => {
+				if (!item.value) return item.name
+				return `${item.name}: ${item.value}`
+			})
+			.join(', ')
+		if (Global.stringToIdentifier && typeof Global.stringToIdentifier === 'function') {
+			return Global.stringToIdentifier.call(this, text, namespace, params, type)
+		}
+		if (Global.translateMode === 'vue') {
+			const identifier = params.length ? `$t('${localeKey}', {${param}})` : `$t('${localeKey}')`
+			if ([ 'vueTemplate', 'text', 'chars' ].includes(type)) {
+				return `{{ ${identifier} }}`
+			}
+			if (type === 'vueScript') {
+				return `this.${identifier}`
+			}
+			if (type === 'script') {
+				return `i18n.${identifier.substring(1)}`
+			}
+			return identifier
+		}
+		if (Global.translateMode === 'angular') {
+			const identifier = params.length ? `'${localeKey}' | translate: ${param}` : `'${localeKey}' | translate`
+			return identifier
+		}
+		logger.info('\n⚠ stringToIdentifier undefined.')
+		return text
 	}
 }

@@ -4,7 +4,6 @@ import { uniq, set, find } from 'lodash'
 import { Global } from './global'
 import { flatten, unflatten } from './utils/flat'
 import { getRandomStr } from './utils/common'
-import { ReplacePatchMatcher } from './utils/pathMatcher'
 
 export class LocaleLoader {
 	constructor (rootpath) {
@@ -158,25 +157,9 @@ export class LocaleLoader {
 			}
 		}
 		const newKey = this.generateLocaleKey(text)
-		const localeKey = namespace ? `${locale}.${namespace}.${newKey}` : `${locale}.${newKey}`
+		const localeKey = namespace ? `${namespace}.${newKey}` : `${locale}.${newKey}`
 		set(this._flattenLocaleData, localeKey, text)
-	}
-
-	async updateLocalesFile (locale) {
-		const localeDatas = this._flattenLocaleData[locale]
-		const parse = Global.getMatchedParser(Global.outputPathMatcher)
-		if (Global.namespace) {
-			for (const namespace in localeDatas) {
-				const newValue = localeDatas[namespace]
-				const pathname = ReplacePatchMatcher(Global.outputPathMatcher, { namespace, locale })
-				const filepath = path.join(this.rootpath, Global.outputLocalesPath, pathname)
-				await parse.save(filepath, unflatten(newValue))
-			}
-		} else {
-			const pathname = ReplacePatchMatcher(Global.outputPathMatcher, { locale })
-			const filepath = path.join(Global.outputLocalesPath, pathname)
-			await parse.save(filepath, unflatten(localeDatas))
-		}
+		return localeKey
 	}
 
 	generateLocaleKey (text) {

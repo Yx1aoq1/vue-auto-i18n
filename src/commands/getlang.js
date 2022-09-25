@@ -30,6 +30,6 @@ export default function getlang (program) {
 					}
 				})
 			}
-			logger.success(`已生成文件并导出至 ${Global.outputLocalesPath} 目录`)
+			logger.success(`已生成文件并导出至目录，请自行检查代码`)
 		})
 }

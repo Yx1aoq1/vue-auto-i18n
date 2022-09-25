@@ -38,17 +38,6 @@ export function makeMap (str, expectsLowerCase) {
 	return expectsLowerCase ? val => map[val.toLowerCase()] : val => map[val]
 }
 
-export function once (fn, context) {
-	var result
-	return function () {
-		if (fn) {
-			result = fn.apply(context || this, arguments)
-			fn = null
-		}
-		return result
-	}
-}
-
 /**
  * 将文本start-end处的文本替换为replace
  * @param {*} soure
