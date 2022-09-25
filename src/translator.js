@@ -124,6 +124,9 @@ export class Translator {
 					if (type === 'vueTemplate') {
 						value = `${token.name[0] === ':' ? '' : ':'}${token.name}="${value}"`
 					}
+					if (type === 'html' && Global.translateMode === 'angular') {
+						value = `${token.name[0] === '[' ? token.name : `[${token.name}]`}="${value}"`
+					}
 					break
 				case 'string':
 				case 'text':
@@ -131,6 +134,7 @@ export class Translator {
 					value = _self.stringToIdentifier(token.text, namespace, params, type)
 					break
 			}
+			logger.info(`replace: ${token.text || token.value} --> ${value}`)
 			return value
 		}
 		let newCode
@@ -154,9 +158,7 @@ export class Translator {
 			default:
 				return
 		}
-		if (replace) {
-			exportFile(filepath, newCode, { flag: 'w' })
-		}
+		replace && exportFile(filepath, newCode, { flag: 'w' })
 	}
 
 	stringToIdentifier (text, namespace, params, type) {
@@ -184,8 +186,16 @@ export class Translator {
 			return identifier
 		}
 		if (Global.translateMode === 'angular') {
-			const identifier = params.length ? `'${localeKey}' | translate: ${param}` : `'${localeKey}' | translate`
-			return identifier
+			const identifier = `'${localeKey}'`
+			if ([ 'text', 'chars' ].includes(type)) {
+				return params.length ? `{{ ${identifier} | translate: {${param}} }}` : `{{ ${identifier} | translate }}`
+			}
+			if (type === 'script') {
+				return params.length
+					? `this.translate.instance(${identifier}, {${param}})`
+					: `this.translate.instance(${identifier})`
+			}
+			return params.length ? `(${identifier} | translate: {${param}})` : `(${identifier} | translate)`
 		}
 		logger.info('\n⚠ stringToIdentifier undefined.')
 		return text
