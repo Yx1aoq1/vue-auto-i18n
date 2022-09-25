@@ -1,6 +1,6 @@
 import fg from 'fast-glob'
 import path from 'path'
-import { uniq, set, find, cloneDeep, first } from 'lodash'
+import { uniq, set, find, cloneDeep, first, sortBy, get } from 'lodash'
 import { Global } from './global'
 import { flatten, unflatten } from './utils/flat'
 import { getRandomStr, getExtname } from './utils/common'
@@ -16,11 +16,16 @@ export class LocaleLoader {
 			await this.loadAll()
 		}
 		this.update()
+		// 获取所有语言并将sourceLanguage排序到第一个
+		this.languages = sortBy([ ...Array.from(this._languages) ], o => Number(o !== Global.sourceLanguage))
+		this.namespaces = [ ...Array.from(this._namespaces) ].filter(item => !!item)
 	}
 
 	async findLocaleDirs () {
 		this._files = {}
 		this._localeDirs = []
+		this._languages = new Set()
+		this._namespaces = new Set()
 		const localesPaths = Global.localesPaths
 		if (localesPaths && localesPaths.length) {
 			try {
@@ -79,6 +84,8 @@ export class LocaleLoader {
 				namespace,
 				matcher
 			}
+			this._languages.add(locale)
+			this._namespaces.add(namespace)
 		} catch (e) {
 			logger.error(e)
 		}
@@ -226,5 +233,28 @@ export class LocaleLoader {
 		}
 		// 生成一个随机 key
 		return `trans_${getRandomStr()}`
+	}
+	/**
+	 * 过滤符合条件的文件
+	 * @param {*} namespaces 
+	 * @returns 
+	 */
+	findMatchFileByNamespaces (namespaces) {
+		return this.files.filter(file => namespaces.includes(file.namespace))
+	}
+	/**
+	 * 找出对应翻译的值
+	 * @param {*} keypath 
+	 * @returns 
+	 */
+	findTranslateByKeypath ({ locale, namespace, keypath }) {
+		const localeDatas = this._flattenLocaleData[locale]
+		if (namespace) {
+			if (keypath) {
+				return get(localeDatas[namespace], keypath, '')
+			}
+			return localeDatas[namespace] || {}
+		}
+		return get(localeDatas, keypath, '')
 	}
 }
