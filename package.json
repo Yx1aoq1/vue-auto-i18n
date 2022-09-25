@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "nodemon --watch src --exec npm run command",
-    "command": "babel-node ./index.js getlang ./test/vue/temp/ test",
+    "command": "babel-node ./index.js getlang ./test/angular/temp/ test",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",

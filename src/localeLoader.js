@@ -137,7 +137,7 @@ export class LocaleLoader {
 			}
 		} else {
 			for (const file of this.files) {
-				this.updateLocaleData(value, file)
+				this.updateLocaleData(file.value, file)
 			}
 		}
 	}
@@ -157,8 +157,12 @@ export class LocaleLoader {
 			}
 		}
 		const newKey = this.generateLocaleKey(text)
-		const localeKey = namespace ? `${namespace}.${newKey}` : `${locale}.${newKey}`
-		this.write({ key: newKey, text, namespace, locale })
+		const localeKey = namespace ? `${namespace}.${newKey}` : newKey
+		if (Global.namespace) {
+			this.write({ key: newKey, text, namespace, locale })
+		} else {
+			this.write({ key: localeKey, text, namespace, locale })
+		}
 		return localeKey
 	}
 
