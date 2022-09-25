@@ -1,7 +1,7 @@
 {
   "name": "@ws/auto-i18n",
   "version": "1.0.0",
-  "description": "vue替换中文i18n工具",
+  "description": "替换中文i18n工具",
   "bin": {
     "i18n-cli": "bin/index.js"
   },
