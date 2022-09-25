@@ -201,7 +201,7 @@ export class Translator {
 		return text
 	}
 
-	async getLocales () {
-		await this.localeLoader.export()
+	async getLocales (namespace) {
+		await this.localeLoader.export(namespace)
 	}
 }

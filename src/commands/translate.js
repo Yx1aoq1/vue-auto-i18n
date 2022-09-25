@@ -21,14 +21,14 @@ export default function transalte (program) {
 			// 单文件处理
 			if (Global.enableTransExts.includes(extname)) {
 				translator.translate(filepath, namespace, true)
-				translator.getLocales()
+				translator.getLocales(namespace)
 			} else {
 				// 文件夹处理
 				travelDir(filepath, path => {
 					const ext = getExtname(path)
 					if (Global.enableTransExts.includes(ext)) {
 						translator.translate(path, namespace, true)
-						translator.getLocales()
+						translator.getLocales(namespace)
 					}
 				})
 			}

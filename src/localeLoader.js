@@ -1,6 +1,6 @@
 import fg from 'fast-glob'
 import path from 'path'
-import { uniq, set, find, cloneDeep, first, sortBy, get } from 'lodash'
+import { uniq, set, find, cloneDeep, first, sortBy, get, filter } from 'lodash'
 import { Global } from './global'
 import { flatten, unflatten } from './utils/flat'
 import { getRandomStr, getExtname } from './utils/common'
@@ -168,7 +168,7 @@ export class LocaleLoader {
 		if (Global.namespace) {
 			this.write({ key: newKey, text, namespace, locale })
 		} else {
-			this.write({ key: localeKey, text, namespace, locale })
+			this.write({ key: localeKey, text, locale })
 		}
 		return localeKey
 	}
@@ -180,7 +180,7 @@ export class LocaleLoader {
 			original = this._files[filepath].value
 		}
 		let modified = cloneDeep(original)
-		set(modified, key, text)
+		modified[key] = text
 		// 已存在文件时，更新文件内容
 		if (this._files[filepath]) {
 			this._files[filepath].value = modified
@@ -215,12 +215,21 @@ export class LocaleLoader {
 		}
 	}
 
-	async export () {
-		for (const file of this.files) {
+	async export (namespace = '') {
+		async function save (file) {
 			const { filepath, value } = file
 			const ext = path.extname(filepath)
 			const parser = Global.getMatchedParser(ext)
 			await parser.save(filepath, unflatten(value))
+		}
+		if (namespace && Global.namespace) {
+			const file = find(this.files, { namespace, locale: Global.sourceLanguage })
+			await save(file)
+		} else {
+			const sourceLangFiles = filter(this.files, { locale: Global.sourceLanguage })
+			for (const file of sourceLangFiles) {
+				await save(file)
+			}
 		}
 	}
 
