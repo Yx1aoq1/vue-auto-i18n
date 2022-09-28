@@ -26,6 +26,8 @@
     "trans_w8qsukdtug": "模板语法{txt1}测试",
     "trans_h452donua0v": "<div>中心</div>",
     "trans_7mxmt93wgnu": "<!-- 注释 -->",
-    "trans_zu5g6tbmuj": "\r\n<div>中心</div>\r\n<!-- 注释 -->\r\n<div>{txt1}</div>\r\n"
+    "trans_zu5g6tbmuj": "\r\n<div>中心</div>\r\n<!-- 注释 -->\r\n<div>{txt1}</div>\r\n",
+    "trans_bnd6w5qfber": "测试测试",
+    "trans_2b4vxryygp3": "板字符串2{value}"
   }
 }

@@ -56,6 +56,12 @@ export function parseTemplate(template) {
       scanner.scanUtil(KEYWORD)
       continue
     }
+    // 去空格操作
+    while (words.slice(0, 1) === ' ') {
+      words = words.slice(1)
+      pos += 1
+      continue
+    }
     // 需要忽略注释及console.log的中文
     if (['//', '/**'].includes(keyword) || (keyword === '(' && words.includes('console.log'))) {
       ignore = true
