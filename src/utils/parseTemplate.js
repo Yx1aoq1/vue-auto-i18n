@@ -77,7 +77,7 @@ export function parseTemplate(template) {
         end: pos,
       })
     }
-    if (!ignore && keyword === '\r\n' && isChineseChar(words)) {
+    if (!ignore && keyword === '\r\n' && isChineseChar(words) && keywordStack.every(item => item.keyword !== '`')) {
       tokens.push({
         type: 'text',
         text: words,
