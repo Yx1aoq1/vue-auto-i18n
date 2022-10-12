@@ -4,4 +4,5 @@ module.exports = {
   localesPaths: ['test/angular/locale'],
   namespace: false,
   pathMatcher: '{locale}.{ext}',
+  translateMode: 'angular',
 }

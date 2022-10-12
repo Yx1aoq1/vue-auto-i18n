@@ -75,7 +75,7 @@ export function parseTemplate(template) {
       // 去空格操作
       while (words.slice(0, 1) === ' ') {
         words = words.slice(1)
-        pos += 1
+        // pos += 1
         continue
       }
       tokens.push({
