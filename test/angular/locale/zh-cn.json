@@ -1,1 +1,29 @@
-{}
+{
+  "test": {
+    "trans_7csc1sbnt7b": "换行测试",
+    "trans_1nmceoe5ehg": "变量中文",
+    "trans_l8l5r1qav3n": "纯文字替换",
+    "trans_x9gp1ynvqgg": "中文+变量显示：",
+    "trans_zkwm8pfzh2": "中文1",
+    "trans_qdz2xr642do": "中文2",
+    "trans_zx5461bvb9r": "函数内部中文",
+    "trans_bpf7mgqq5mw": "中文3",
+    "trans_deyq5ifxq": "第一行 2.第二行 3.第三行",
+    "trans_rs4yhjnqyl": "属性纯中文",
+    "trans_qmsxjhozxg": "ES6模板字符串{value}",
+    "trans_wrfqj1zoat": "中文字符串1",
+    "trans_l2l6lm6rdp": "模板字符串2{value}",
+    "trans_2d0s5x9ds6s": "ES6模板字符{value0}",
+    "trans_7pfsvpo1115": "不能为空",
+    "trans_06vragmkgxq8": "元素1",
+    "trans_38hqi7wl50t": "元素2",
+    "trans_nptmlu1g0e": "中文a",
+    "trans_92gym16n1lc": "中文b",
+    "trans_h5w5b15fql6": "中文c",
+    "trans_vx74l2f5cki": "你好",
+    "trans_3kacmdtvbwa": "测试中文匹配3",
+    "trans_sg6tq32wzg": "测试中文匹配4",
+    "trans_yrh3y0ywedj": "模板语法{txt1}测试",
+    "trans_h66xvvyo93s": "\r\n<div>中心</div>\r\n<!-- 注释 -->\r\n<div>{txt1}</div>\r\n"
+  }
+}

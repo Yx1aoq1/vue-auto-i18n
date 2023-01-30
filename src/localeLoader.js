@@ -266,4 +266,22 @@ export class LocaleLoader {
     }
     return get(localeDatas, keypath, '')
   }
+  /**
+   * 找出所有匹配的翻译key
+   * @param {*} text 查找字符
+   * @param {*} fuzzy 是否模糊匹配
+   * @returns 
+   */
+  findAllMatchLocaleKey(text, fuzzy = false) {
+    const locale = Global.sourceLanguage
+    const localeDatas = flatten(this._flattenLocaleData[locale])
+    const result = []
+    for (const key in localeDatas) {
+      const value = localeDatas[key]
+      if ((fuzzy && value.includes(text)) || text === value) {
+        result.push(key)
+      }
+    }
+    return result
+  }
 }
