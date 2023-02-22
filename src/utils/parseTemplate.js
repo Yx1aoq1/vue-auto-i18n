@@ -1,10 +1,10 @@
 import { Scanner } from './scanner'
 import { isChineseChar, codeReplace } from './common'
 
-const chinese = /[^\x00-\xff]+.*/g
+const chinese = /\S*[^\x00-\xff]+\S*/g
 const vname = /^[a-zA-Z\$_][a-zA-Z\d_]*$/
 // 需要查找的关键字
-const KEYWORD = ["'", '`', '{{', '}}', '${', '}', '"', '(', ')', '//', '/**', '*/', '\r\n']
+const KEYWORD = ["'", '`', '{{', '}}', '${', '}', '"', '(', ')', '//', '/**', '*/', '\r\n', '\n', '\r']
 const MATCH_KEYWORD = {
   "'": "'",
   '"': '"',
@@ -13,7 +13,7 @@ const MATCH_KEYWORD = {
   '}': '',
   '(': ')',
   '{{': '}}',
-  '//': '\r\n',
+  '//': ['\r\n', '\n', '\r'],
   '/**': '*/',
 }
 
@@ -33,17 +33,7 @@ export function parseTemplate(template) {
   words = scanner.scanUtil(KEYWORD)
   // 没有查询到任何关键字或者关键字前包含中文，都按全段文字为中文处理
   if (!scanner.keyword || (isChineseChar(words) && scanner.keyword !== '{{')) {
-    const zhMatch = template.match(chinese)
-    while (zhMatch && zhMatch.length) {
-      const char = zhMatch.shift()
-      const start = template.indexOf(char)
-      tokens.push({
-        type: 'text',
-        text: char,
-        start,
-        end: start + char.length,
-      })
-    }
+    matchChinese(template, 0)
     return tokens
   }
   // 遍历字符串
@@ -64,26 +54,10 @@ export function parseTemplate(template) {
       isExp = true
     }
     if (keyword === '{{' && isChineseChar(words)) {
-      tokens.push({
-        type: 'text',
-        text: words,
-        start: pos - words.length,
-        end: pos,
-      })
+      matchChinese(words, pos - words.length)
     }
-    if (!ignore && keyword === '\r\n' && isChineseChar(words) && keywordStack.every(item => item.keyword !== '`')) {
-      // 去空格操作
-      while (words.slice(0, 1) === ' ') {
-        words = words.slice(1)
-        // pos += 1
-        continue
-      }
-      tokens.push({
-        type: 'text',
-        text: words,
-        start: pos - words.length,
-        end: pos,
-      })
+    if (!ignore && ['\r\n', '\n', '\r'].includes(keyword) && isChineseChar(words) && keywordStack.every(item => item.keyword !== '`')) {
+      matchChinese(words, pos - words.length)
     }
     matched = matchPairKeyword(keyword, pos)
     if (matched && !ignore) {
@@ -142,7 +116,25 @@ export function parseTemplate(template) {
     scanner.scan()
     words = scanner.scanUtil(KEYWORD)
   }
+  // 匹配完之后有剩余的字符串也需要校验是否存在中文
+  if (words && isChineseChar(words)) {
+    matchChinese(words, scanner.pos - words.length)
+  }
   return tokens
+
+  function matchChinese(string, start) {
+    const zhMatch = string.match(chinese)
+    while (zhMatch && zhMatch.length) {
+      const char = zhMatch.shift()
+      start = start + string.indexOf(char)
+      tokens.push({
+        type: 'text',
+        text: char,
+        start,
+        end: start + char.length,
+      })
+    }
+  }
 
   function matchPairKeyword(keyword, pos) {
     const keyMatch = MATCH_KEYWORD[keyword]
@@ -156,7 +148,11 @@ export function parseTemplate(template) {
       return
     }
     const last = keywordStack[len - 1]
-    if (MATCH_KEYWORD[last.keyword] !== keyword) {
+    const lastKeyMatch = MATCH_KEYWORD[last.keyword]
+    if (
+      (typeof lastKeyMatch === 'string' && lastKeyMatch !== keyword) ||
+      (Array.isArray(lastKeyMatch) && lastKeyMatch.includes(keyword))
+    ) {
       keyMatch &&
         keywordStack.push({
           keyword,
