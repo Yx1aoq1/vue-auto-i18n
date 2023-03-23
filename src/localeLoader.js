@@ -10,7 +10,7 @@ export class LocaleLoader {
     this.rootpath = rootpath
   }
 
-  async init() {
+  async init () {
     if (await this.findLocaleDirs()) {
       this._pathMatchers = Global.getPathMatchers()
       await this.loadAll()
@@ -21,7 +21,7 @@ export class LocaleLoader {
     this.namespaces = [...Array.from(this._namespaces)].filter(item => !!item)
   }
 
-  async findLocaleDirs() {
+  async findLocaleDirs () {
     this._files = {}
     this._localeDirs = []
     this._languages = new Set()
@@ -48,13 +48,13 @@ export class LocaleLoader {
     return true
   }
 
-  async loadAll() {
+  async loadAll () {
     for (const pathname of this._localeDirs) {
       await this.loadDirectory(pathname)
     }
   }
 
-  async loadDirectory(searchingPath) {
+  async loadDirectory (searchingPath) {
     const files = await fg('**/*.*', {
       cwd: searchingPath,
       onlyFiles: true,
@@ -66,7 +66,7 @@ export class LocaleLoader {
     }
   }
 
-  async loadFile(dirpath, relativePath) {
+  async loadFile (dirpath, relativePath) {
     try {
       const result = this.getFileInfo(dirpath, relativePath)
       if (!result) return
@@ -91,7 +91,7 @@ export class LocaleLoader {
     }
   }
 
-  getFileInfo(dirpath, relativePath) {
+  getFileInfo (dirpath, relativePath) {
     const fullpath = path.resolve(dirpath, relativePath)
     const ext = path.extname(relativePath)
 
@@ -129,7 +129,7 @@ export class LocaleLoader {
     }
   }
 
-  update() {
+  update () {
     this._flattenLocaleData = {}
     this.files = Object.values(this._files)
     if (Global.namespace) {
@@ -149,12 +149,12 @@ export class LocaleLoader {
     }
   }
 
-  updateLocaleData(data, options) {
+  updateLocaleData (data, options) {
     const { namespace, locale } = options
     set(this._flattenLocaleData, locale, assign({}, this._flattenLocaleData[locale], data))
   }
 
-  findMatchLocaleKey(text, namespace) {
+  findMatchLocaleKey (text, namespace) {
     const locale = Global.sourceLanguage
     const localeDatas = flatten(this._flattenLocaleData[locale])
     for (const key in localeDatas) {
@@ -173,7 +173,7 @@ export class LocaleLoader {
     return localeKey
   }
 
-  write({ key, text, namespace, locale }) {
+  write ({ key, text, namespace, locale }) {
     const { filepath } = find(this.files, { namespace, locale }) || {}
     let original = {}
     if (this._files[filepath]) {
@@ -191,7 +191,7 @@ export class LocaleLoader {
     this.update()
   }
 
-  createNewLocaleFile(locale, namespace, data) {
+  createNewLocaleFile (locale, namespace, data) {
     if (!locale) return
     // 获取已查询出的locale目录下的第一个文件作为范本
     const file = first(this.files)
@@ -215,25 +215,25 @@ export class LocaleLoader {
     }
   }
 
-  async export(namespace = '') {
-    async function save(file) {
+  async export (namespace = '', locale = Global.sourceLanguage) {
+    async function save (file) {
       const { filepath, value } = file
       const ext = path.extname(filepath)
       const parser = Global.getMatchedParser(ext)
       await parser.save(filepath, unflatten(value))
     }
     if (namespace && Global.namespace) {
-      const file = find(this.files, { namespace, locale: Global.sourceLanguage })
+      const file = find(this.files, { namespace, locale })
       await save(file)
     } else {
-      const sourceLangFiles = filter(this.files, { locale: Global.sourceLanguage })
+      const sourceLangFiles = filter(this.files, { locale })
       for (const file of sourceLangFiles) {
         await save(file)
       }
     }
   }
 
-  generateLocaleKey(text) {
+  generateLocaleKey (text) {
     if (Global.generateLocaleKey && typeof Global.generateLocaleKey === 'function') {
       return Global.generateLocaleKey.call(this, text)
     }
@@ -248,7 +248,7 @@ export class LocaleLoader {
    * @param {*} namespaces
    * @returns
    */
-  findMatchFileByNamespaces(namespaces) {
+  findMatchFileByNamespaces (namespaces) {
     return this.files.filter(file => namespaces.includes(file.namespace))
   }
   /**
@@ -256,7 +256,7 @@ export class LocaleLoader {
    * @param {*} keypath
    * @returns
    */
-  findTranslateByKeypath({ locale, namespace, keypath }) {
+  findTranslateByKeypath ({ locale, namespace, keypath }) {
     const localeDatas = this._flattenLocaleData[locale]
     if (namespace) {
       if (keypath) {
@@ -272,7 +272,7 @@ export class LocaleLoader {
    * @param {*} fuzzy 是否模糊匹配
    * @returns 
    */
-  findAllMatchLocaleKey(text, fuzzy = false) {
+  findAllMatchLocaleKey (text, fuzzy = false) {
     const locale = Global.sourceLanguage
     const localeDatas = flatten(this._flattenLocaleData[locale])
     const result = []
