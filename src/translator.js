@@ -5,12 +5,12 @@ import { parseHTML } from './utils/parseHTML'
 import { isChineseChar } from './utils/common'
 import { parseTemplate } from './utils/parseTemplate'
 import { cloneDeep } from 'lodash'
-import * as vueCompiler from 'vue-template-compiler'
-import Stringify from 'vue-sfc-descriptor-stringify'
+import { parse } from '@vue/compiler-sfc'
 import { Global } from './global'
 import { exportFile } from './utils/fs'
+import compile from './utils/sfcDescriptorStringify'
 export class Translator {
-  static async create () {
+  static async create() {
     const localeLoader = new LocaleLoader(process.cwd())
     await localeLoader.init()
     return new Translator(localeLoader)
@@ -22,7 +22,7 @@ export class Translator {
    * 如果代码中包含 i18nIgnore 关键字，则该文件忽略国际化
    * @param {*} code
    */
-  isIgnore (code) {
+  isIgnore(code) {
     return code.includes('i18nIgnore')
   }
   /**
@@ -30,12 +30,12 @@ export class Translator {
    * @param {*} html
    * @returns
    */
-  parseHTML (html) {
+  parseHTML(html) {
     const tokens = []
     parseHTML(html, {
       expectHTML: true,
       shouldKeepComment: false,
-      start (tag, attrs, unary, start, end) {
+      start(tag, attrs, unary, start, end) {
         if (attrs && attrs.length) {
           attrs.map(attr => {
             if (isChineseChar(attr.value)) {
@@ -48,7 +48,7 @@ export class Translator {
           })
         }
       },
-      chars (text, start, end) {
+      chars(text, start, end) {
         if (isChineseChar(text)) {
           tokens.push({
             type: 'chars',
@@ -67,11 +67,11 @@ export class Translator {
    * @param {*} html
    * @returns
    */
-  parseECMAScript (code) {
+  parseECMAScript(code) {
     return parseTemplate(code)
   }
 
-  parse (filepath) {
+  parse(filepath) {
     const extname = getExtname(filepath)
     const code = fs.readFileSync(filepath, 'utf-8')
     if (this.isIgnore(code)) return
@@ -83,11 +83,11 @@ export class Translator {
           origin: code,
         }
       case 'vue':
-        const originSfcDescriptor = vueCompiler.parseComponent(code)
+        const originSfcDescriptor = parse(code).descriptor
         const sfcDescriptor = cloneDeep(originSfcDescriptor)
         const template = sfcDescriptor.template.content
         // 兼容setup语法
-        const script = (sfcDescriptor.script || sfcDescriptor.scriptSetup).content
+        const script = (sfcDescriptor.script || sfcDescriptor.scriptSetup || { content: '' }).content
         return {
           extname,
           originSfcDescriptor,
@@ -106,10 +106,10 @@ export class Translator {
     }
   }
 
-  translate (filepath, namespace, replace = false) {
+  translate(filepath, namespace, replace = false) {
     const { extname, tokens, origin, originSfcDescriptor, sfcDescriptor } = this.parse(filepath)
     const _self = this
-    function handleToken (token, type = '') {
+    function handleToken(token, type = '') {
       let value
       const params = (token.params || []).map(item => ({
         name: item.name,
@@ -156,7 +156,8 @@ export class Translator {
             handleToken(t, 'script')
           )
         }
-        newCode = Stringify(sfcDescriptor, originSfcDescriptor)
+        newCode = compile(sfcDescriptor)
+        console.log('🚀 ~ file: translator.js:160 ~ Translator ~ translate ~ newCode:', newCode);
         break
       case 'js':
       case 'ts':
@@ -168,7 +169,7 @@ export class Translator {
     replace && exportFile(filepath, newCode, { flag: 'w' })
   }
 
-  stringToIdentifier (text, namespace, params, type) {
+  stringToIdentifier(text, namespace, params, type) {
     const localeKey = this.localeLoader.findMatchLocaleKey(text, namespace)
     logger.info(`replace: ${text} --> ${localeKey}`)
     const param = params
@@ -209,7 +210,7 @@ export class Translator {
     return text
   }
 
-  async getLocales (namespace) {
+  async getLocales(namespace) {
     await this.localeLoader.export(namespace)
   }
 }

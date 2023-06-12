@@ -7,21 +7,22 @@
   },
   "scripts": {
     "start": "nodemon --watch src --exec npm run command",
-    "command": "babel-node ./index.js getlang test/vue/temp/setup.vue template",
+    "command": "babel-node ./index.js translate test/vue/temp/setup.vue template",
     "build": "babel src -d lib"
   },
   "author": "yanx1aoq1995@gmail.com",
   "license": "ISC",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.17.2",
+    "@vue/compiler-sfc": "^3.2.47",
     "chalk": "^4.1.2",
     "commander": "^8.2.0",
     "dayjs": "^1.10.7",
     "fast-glob": "^3.2.12",
+    "indent-string": "^5.0.0",
     "lodash": "^4.17.21",
     "node-xlsx": "^0.17.2",
-    "vue-sfc-descriptor-stringify": "^0.1.0",
-    "vue-template-compiler": "^2.7.14"
+    "prettier": "^2.8.8"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",

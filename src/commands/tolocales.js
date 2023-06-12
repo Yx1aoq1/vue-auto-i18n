@@ -4,7 +4,7 @@ import xlsx from 'node-xlsx'
 import { LocaleLoader } from '../localeLoader'
 import { Global } from '../global'
 
-export default function exceltojs (program) {
+export default function exceltojs(program) {
   program
     .command('tolocales <excelpath> [locales] [namespaces]')
     .description('读取excel生成对应的国际化语言包，传入<excelpath>导出位置，可指定只导出[namespaces]的几个表及到处的[locales]语言')
