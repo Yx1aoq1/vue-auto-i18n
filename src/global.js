@@ -11,7 +11,7 @@ export class Global {
   // 默认导出对应的语言
   static sourceLanguage = Config.sourceLanguage || 'zh-cn'
   // 读取locales配置时对应的拓展名
-  static enabledParsers = AvailableParsers.filter(i => (Config.enabledParsers || ['js', 'json']).includes(i.id))
+  static enabledParsers = AvailableParsers.filter((i) => (Config.enabledParsers || ['js', 'json']).includes(i.id))
   // locales配置的文件夹路径
   static localesPaths = Config.localesPaths
   // 是否有命名空间
@@ -30,8 +30,8 @@ export class Global {
   static stringToIdentifier = Config.stringToIdentifier
   static getPathMatchers() {
     const rules = Array.isArray(Config.pathMatcher) ? Config.pathMatcher : [Config.pathMatcher]
-    const enabledParserExts = Global.enabledParsers.map(item => item.id).join('|')
-    return uniq(rules).map(matcher => ({
+    const enabledParserExts = Global.enabledParsers.map((item) => item.id).join('|')
+    return uniq(rules).map((matcher) => ({
       regex: ParsePathMatcher(matcher, enabledParserExts),
       matcher
     }))
@@ -39,6 +39,8 @@ export class Global {
   //
   static getMatchedParser(ext) {
     if (!ext.startsWith('.') && ext.includes('.')) ext = extname(ext)
-    return Global.enabledParsers.find(parser => parser.supports(ext))
+    return Global.enabledParsers.find((parser) => parser.supports(ext))
   }
+  // 导出格式 Can be flat({"a.b.c": "..."}) or nested({"a": {"b": {"c": "..."}}})
+  static keystyle = Config.keystyle || 'nested'
 }

@@ -12,10 +12,10 @@ export const canBeLeftOpenTag = makeMap('colgroup,dd,dt,li,options,p,td,tfoot,th
 // Phrasing Content https://html.spec.whatwg.org/multipage/dom.html#phrasing-content
 export const isNonPhrasingTag = makeMap(
   'address,article,aside,base,blockquote,body,caption,col,colgroup,dd,' +
-  'details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,' +
-  'h1,h2,h3,h4,h5,h6,head,header,hgroup,hr,html,legend,li,menuitem,meta,' +
-  'optgroup,option,param,rp,rt,source,style,summary,tbody,td,tfoot,th,thead,' +
-  'title,tr,track'
+    'details,dialog,div,dl,dt,fieldset,figcaption,figure,footer,form,' +
+    'h1,h2,h3,h4,h5,h6,head,header,hgroup,hr,html,legend,li,menuitem,meta,' +
+    'optgroup,option,param,rp,rt,source,style,summary,tbody,td,tfoot,th,thead,' +
+    'title,tr,track'
 )
 
 // Special Elements (can contain anything)
@@ -23,7 +23,8 @@ export const isPlainTextElement = makeMap('script,style,textarea', true)
 
 // Regular Expressions for parsing tags and attributes
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
-const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+const dynamicArgAttribute =
+  /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
 const ncname = '[a-zA-Z_][\\w\\-\\.]*'
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
@@ -54,7 +55,7 @@ const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) &
 
 function decodeAttr(value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
-  return value.replace(re, match => decodingMap[match])
+  return value.replace(re, (match) => decodingMap[match])
 }
 
 export function parseHTML(html, options) {
@@ -141,8 +142,7 @@ export function parseHTML(html, options) {
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase()
       const reStackedTag =
-        reCache[stackedTag] ||
-        (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
+        reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
       const rest = html.replace(reStackedTag, function (all, text, endTag) {
         endTagLength = endTag.length
         if (!isPlainTextElement(stackedTag) && stackedTag !== 'noscript') {
@@ -226,9 +226,7 @@ export function parseHTML(html, options) {
         const args = match.attrs[i]
         const value = args[3] || args[4] || args[5] || ''
         const shouldDecodeNewlines =
-          tagName === 'a' && args[1] === 'href'
-            ? options.shouldDecodeNewlinesForHref
-            : options.shouldDecodeNewlines
+          tagName === 'a' && args[1] === 'href' ? options.shouldDecodeNewlinesForHref : options.shouldDecodeNewlines
         attrs[i] = {
           name: args[1],
           value: decodeAttr(value, shouldDecodeNewlines)

@@ -13,8 +13,8 @@ function generateExcelData(localeLoader, namespace) {
     namespace
   })
   const paths = Object.keys(sourceLanguageTrans)
-  paths.map(keypath => {
-    const trans = locales.map(locale => {
+  paths.map((keypath) => {
+    const trans = locales.map((locale) => {
       return localeLoader.findTranslateByKeypath({
         locale,
         namespace,
@@ -51,7 +51,7 @@ export default function toexcel(program) {
       const buildDatas = []
       // 配置了命名空间或存在命名空间配置时，导出按命名空间分成多个子表格
       if (namespaces.length) {
-        namespaces.map(namespace => {
+        namespaces.map((namespace) => {
           buildDatas.push({
             name: namespace,
             data: generateExcelData(localeLoader, namespace)

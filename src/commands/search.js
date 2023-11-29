@@ -1,7 +1,5 @@
 import { LocaleLoader } from '../localeLoader'
 
-
-
 export default function getlang(program) {
   program
     .command('search <text>')

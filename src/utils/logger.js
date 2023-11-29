@@ -19,10 +19,10 @@ global.logger = {
   logWithTime: function () {
     info(
       chalk.cyan('[auto-i18n] ') +
-      ' [' +
-      dayjs().format('YY.MM.DD HH:mm:ss') +
-      '] ' +
-      [].slice.call(arguments).join(' ')
+        ' [' +
+        dayjs().format('YY.MM.DD HH:mm:ss') +
+        '] ' +
+        [].slice.call(arguments).join(' ')
     )
   }
 }

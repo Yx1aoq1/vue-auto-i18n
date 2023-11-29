@@ -23,7 +23,7 @@ export class Parser {
     fs.writeFileSync(filepath, text)
   }
 
-  parse(text) { }
+  parse(text) {}
 
-  dump(object) { }
+  dump(object) {}
 }

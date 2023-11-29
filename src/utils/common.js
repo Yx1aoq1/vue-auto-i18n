@@ -1,5 +1,5 @@
 export function getExtname(path) {
-  return path.slice((path.lastIndexOf(".") - 1 >>> 0) + 2)
+  return path.slice(((path.lastIndexOf('.') - 1) >>> 0) + 2)
 }
 
 export function getFilenameWithoutExt(path) {
@@ -34,7 +34,7 @@ export function makeMap(str, expectsLowerCase) {
   for (let i = 0; i < list.length; i++) {
     map[list[i]] = true
   }
-  return expectsLowerCase ? val => map[val.toLowerCase()] : val => map[val]
+  return expectsLowerCase ? (val) => map[val.toLowerCase()] : (val) => map[val]
 }
 
 /**
@@ -59,7 +59,7 @@ export function splice(soure, start, end, replace) {
 export function codeReplace(origin, tokens, callback) {
   let code = origin
   let offset = 0
-  tokens.forEach(token => {
+  tokens.forEach((token) => {
     code = splice(code, token.start + offset, token.end + offset, callback(token))
     offset = code.length - origin.length
     // console.log('code', code)

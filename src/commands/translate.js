@@ -24,7 +24,7 @@ export default function transalte(program) {
         translator.getLocales(namespace)
       } else {
         // 文件夹处理
-        travelDir(filepath, path => {
+        travelDir(filepath, (path) => {
           const ext = getExtname(path)
           if (Global.enableTransExts.includes(ext)) {
             translator.translate(path, namespace, true)

@@ -3,12 +3,12 @@ import fs from 'fs'
 let commands = []
 
 fs.readdirSync(__dirname)
-  .filter(fileName => fileName !== 'index.js')
-  .forEach(fileName => {
+  .filter((fileName) => fileName !== 'index.js')
+  .forEach((fileName) => {
     let command = require('./' + fileName).default
     commands.push(command)
   })
 
 export default function run(program) {
-  commands.forEach(command => command(program))
+  commands.forEach((command) => command(program))
 }

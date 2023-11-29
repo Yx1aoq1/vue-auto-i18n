@@ -7,7 +7,9 @@ import { Global } from '../global'
 export default function exceltojs(program) {
   program
     .command('tolocales <excelpath> [locales] [namespaces]')
-    .description('读取excel生成对应的国际化语言包，传入<excelpath>导出位置，可指定只导出[namespaces]的几个表及到处的[locales]语言')
+    .description(
+      '读取excel生成对应的国际化语言包，传入<excelpath>导出位置，可指定只导出[namespaces]的几个表及到处的[locales]语言'
+    )
     .action(async (excelpath, locales = 'en', namespaces = '') => {
       const regex = /^(?<namespace>\w+)\.(?<keypath>.+)$/
       const localeLoader = new LocaleLoader(process.cwd())
@@ -28,12 +30,12 @@ export default function exceltojs(program) {
         if (locales) {
           locales = locales.split(',')
         }
-        sheets.map(sheet => {
+        sheets.map((sheet) => {
           const { name, data } = sheet
           const cols = data.shift()
           const [keyCols, ...clocales] = cols
           if (!namespaces || namespaces.includes(name)) {
-            data.map(item => {
+            data.map((item) => {
               const [key, ...trans] = item
               let namespace
               let keypath = key
@@ -58,11 +60,11 @@ export default function exceltojs(program) {
           }
         })
         localeLoader.update()
-        locales.map(locale => {
+        locales.map((locale) => {
           localeLoader.export(namespaces, locale)
         })
       } catch (err) {
-        logger.error(`解析excel文件失败`)
+        logger.error(`解析excel文件失败,${err}`)
         process.exit()
       }
     })

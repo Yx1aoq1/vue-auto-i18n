@@ -37,12 +37,12 @@ export class Translator {
       shouldKeepComment: false,
       start(tag, attrs, unary, start, end) {
         if (attrs && attrs.length) {
-          attrs.map(attr => {
+          attrs.map((attr) => {
             if (isChineseChar(attr.value)) {
               tokens.push({
                 type: 'attribute',
                 ...attr,
-                tokens: parseTemplate(attr.value),
+                tokens: parseTemplate(attr.value)
               })
             }
           })
@@ -55,10 +55,10 @@ export class Translator {
             text,
             start,
             end,
-            tokens: parseTemplate(text),
+            tokens: parseTemplate(text)
           })
         }
-      },
+      }
     })
     return tokens
   }
@@ -80,7 +80,7 @@ export class Translator {
         return {
           extname,
           tokens: this.parseHTML(code),
-          origin: code,
+          origin: code
         }
       case 'vue':
         const originSfcDescriptor = parse(code).descriptor
@@ -92,14 +92,14 @@ export class Translator {
           extname,
           originSfcDescriptor,
           sfcDescriptor,
-          tokens: [this.parseHTML(template), this.parseECMAScript(script)],
+          tokens: [this.parseHTML(template), this.parseECMAScript(script)]
         }
       case 'js':
       case 'ts':
         return {
           extname,
           tokens: this.parseECMAScript(code),
-          origin: code,
+          origin: code
         }
       default:
         return
@@ -111,17 +111,17 @@ export class Translator {
     const _self = this
     function handleToken(token, type = '') {
       let value
-      const params = (token.params || []).map(item => ({
+      const params = (token.params || []).map((item) => ({
         name: item.name,
-        value: item.expression && codeReplace(item.expression, item.tokens, t => handleToken(t, 'template')),
+        value: item.expression && codeReplace(item.expression, item.tokens, (t) => handleToken(t, 'template'))
       }))
       switch (token.type) {
         // 由div包裹的纯文本
         case 'chars':
-          value = codeReplace(token.text, token.tokens, t => handleToken(t, t.type))
+          value = codeReplace(token.text, token.tokens, (t) => handleToken(t, t.type))
           break
         case 'attribute':
-          value = codeReplace(token.value, token.tokens, t => handleToken(t, 'attribute'))
+          value = codeReplace(token.value, token.tokens, (t) => handleToken(t, 'attribute'))
           if (type === 'vueTemplate') {
             value = `${token.name[0] === ':' ? '' : ':'}${token.name}="${value}"`
           }
@@ -140,28 +140,28 @@ export class Translator {
     let newCode
     switch (extname) {
       case 'html':
-        newCode = codeReplace(origin, tokens, t => handleToken(t, 'html'))
+        newCode = codeReplace(origin, tokens, (t) => handleToken(t, 'html'))
         break
       case 'vue':
-        sfcDescriptor.template.content = codeReplace(sfcDescriptor.template.content, tokens[0], t =>
+        sfcDescriptor.template.content = codeReplace(sfcDescriptor.template.content, tokens[0], (t) =>
           handleToken(t, 'vueTemplate')
         )
         if (sfcDescriptor.script) {
-          sfcDescriptor.script.content = codeReplace(sfcDescriptor.script.content, tokens[1], t =>
+          sfcDescriptor.script.content = codeReplace(sfcDescriptor.script.content, tokens[1], (t) =>
             handleToken(t, 'vueScript')
           )
         }
         if (sfcDescriptor.scriptSetup) {
-          sfcDescriptor.scriptSetup.content = codeReplace(sfcDescriptor.scriptSetup.content, tokens[1], t =>
+          sfcDescriptor.scriptSetup.content = codeReplace(sfcDescriptor.scriptSetup.content, tokens[1], (t) =>
             handleToken(t, 'script')
           )
         }
         newCode = compile(sfcDescriptor)
-        console.log('🚀 ~ file: translator.js:160 ~ Translator ~ translate ~ newCode:', newCode);
+        console.log('🚀 ~ file: translator.js:160 ~ Translator ~ translate ~ newCode:', newCode)
         break
       case 'js':
       case 'ts':
-        newCode = codeReplace(origin, tokens, t => handleToken(t, 'script'))
+        newCode = codeReplace(origin, tokens, (t) => handleToken(t, 'script'))
         break
       default:
         return
@@ -173,7 +173,7 @@ export class Translator {
     const localeKey = this.localeLoader.findMatchLocaleKey(text, namespace)
     logger.info(`replace: ${text} --> ${localeKey}`)
     const param = params
-      .map(item => {
+      .map((item) => {
         if (!item.value) return item.name
         return `${item.name}: ${item.value}`
       })

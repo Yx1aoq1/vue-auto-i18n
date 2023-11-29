@@ -38,7 +38,7 @@ export function exportFile(filepath, buffer, options) {
  * 遍历文件夹
  */
 export function travelDir(src, callback) {
-  fs.readdirSync(src).forEach(filename => {
+  fs.readdirSync(src).forEach((filename) => {
     // 判断是否为文件夹
     const filepath = path.join(src, filename)
     if (isDirectory(filepath)) {

@@ -4,11 +4,11 @@ export default function toString(sfcDescriptor) {
   const { template, script, scriptSetup, styles, customBlocks } = sfcDescriptor
   const code = [template, script, scriptSetup, ...styles, ...customBlocks]
     // discard blocks that don't exist
-    .filter(block => block != null)
+    .filter((block) => block != null)
     // sort blocks by source position
     .sort((a, b) => a.start - b.start)
     // figure out exact source positions of blocks
-    .map(block => {
+    .map((block) => {
       const openTag = makeOpenTag(block)
       const closeTag = makeCloseTag(block)
 
@@ -20,7 +20,7 @@ export default function toString(sfcDescriptor) {
         endOfOpenTag: block.start,
 
         startOfCloseTag: block.end,
-        endOfCloseTag: block.end + closeTag.length,
+        endOfCloseTag: block.end + closeTag.length
       })
     })
     // generate sfc source
@@ -40,7 +40,7 @@ export default function toString(sfcDescriptor) {
     }, '')
 
   return prettier.format(code, {
-    parser: 'vue',
+    parser: 'vue'
   })
 }
 
@@ -49,7 +49,7 @@ function makeOpenTag(block) {
 
   source += Object.keys(block.attrs)
     .sort()
-    .map(name => {
+    .map((name) => {
       const value = block.attrs[name]
 
       if (value === true) {
@@ -58,7 +58,7 @@ function makeOpenTag(block) {
         return `${name}="${value}"`
       }
     })
-    .map(attr => ' ' + attr)
+    .map((attr) => ' ' + attr)
     .join('')
 
   return source + '>'

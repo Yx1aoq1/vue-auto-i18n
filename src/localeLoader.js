@@ -17,8 +17,8 @@ export class LocaleLoader {
     }
     this.update()
     // 获取所有语言并将sourceLanguage排序到第一个
-    this.languages = sortBy([...Array.from(this._languages)], o => Number(o !== Global.sourceLanguage))
-    this.namespaces = [...Array.from(this._namespaces)].filter(item => !!item)
+    this.languages = sortBy([...Array.from(this._languages)], (o) => Number(o !== Global.sourceLanguage))
+    this.namespaces = [...Array.from(this._namespaces)].filter((item) => !!item)
   }
 
   async findLocaleDirs() {
@@ -31,10 +31,10 @@ export class LocaleLoader {
       try {
         const _localeDirs = await fg(localesPaths, {
           cwd: this.rootpath,
-          onlyDirectories: true,
+          onlyDirectories: true
         })
         if (localesPaths.includes('.')) _localeDirs.push('.')
-        this._localeDirs = uniq(_localeDirs.map(p => path.resolve(this.rootpath, p)))
+        this._localeDirs = uniq(_localeDirs.map((p) => path.resolve(this.rootpath, p)))
       } catch (e) {
         logger.error(e)
       }
@@ -59,7 +59,7 @@ export class LocaleLoader {
       cwd: searchingPath,
       onlyFiles: true,
       ignore: ['node_modules/**', 'vendors/**', ...Global.ignoreFiles],
-      deep: Global.includeSubfolders ? undefined : 2,
+      deep: Global.includeSubfolders ? undefined : 2
     })
     for (const relative of files) {
       await this.loadFile(searchingPath, relative)
@@ -82,7 +82,7 @@ export class LocaleLoader {
         locale,
         value,
         namespace,
-        matcher,
+        matcher
       }
       this._languages.add(locale)
       this._namespaces.add(namespace)
@@ -125,7 +125,7 @@ export class LocaleLoader {
       ext,
       namespace,
       fullpath,
-      matcher,
+      matcher
     }
   }
 
@@ -133,9 +133,9 @@ export class LocaleLoader {
     this._flattenLocaleData = {}
     this.files = Object.values(this._files)
     if (Global.namespace) {
-      const namespaces = uniq(this.files.map(f => f.namespace))
+      const namespaces = uniq(this.files.map((f) => f.namespace))
       for (const ns of namespaces) {
-        const files = this.files.filter(f => f.namespace === ns)
+        const files = this.files.filter((f) => f.namespace === ns)
 
         for (const file of files) {
           const value = ns ? set({}, ns, file.value) : file.value
@@ -211,7 +211,7 @@ export class LocaleLoader {
       locale,
       value: data,
       namespace,
-      matcher,
+      matcher
     }
   }
 
@@ -220,7 +220,7 @@ export class LocaleLoader {
       const { filepath, value } = file
       const ext = path.extname(filepath)
       const parser = Global.getMatchedParser(ext)
-      await parser.save(filepath, unflatten(value))
+      await parser.save(filepath, Global.keystyle === 'nested' ? unflatten(value) : value)
     }
     if (namespace && Global.namespace) {
       const file = find(this.files, { namespace, locale })
@@ -249,7 +249,7 @@ export class LocaleLoader {
    * @returns
    */
   findMatchFileByNamespaces(namespaces) {
-    return this.files.filter(file => namespaces.includes(file.namespace))
+    return this.files.filter((file) => namespaces.includes(file.namespace))
   }
   /**
    * 找出对应翻译的值
@@ -270,7 +270,7 @@ export class LocaleLoader {
    * 找出所有匹配的翻译key
    * @param {*} text 查找字符
    * @param {*} fuzzy 是否模糊匹配
-   * @returns 
+   * @returns
    */
   findAllMatchLocaleKey(text, fuzzy = false) {
     const locale = Global.sourceLanguage

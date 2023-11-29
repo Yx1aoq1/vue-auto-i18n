@@ -40,7 +40,7 @@ export class Scanner {
     if (!keys.length) return null
     let nearest
     let min = Infinity
-    keys.forEach(keyword => {
+    keys.forEach((keyword) => {
       const pos = this.findKeywordPos(keyword)
       if (pos !== -1 && pos < min) {
         min = pos
