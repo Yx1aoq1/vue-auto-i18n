@@ -157,7 +157,6 @@ export class Translator {
           )
         }
         newCode = compile(sfcDescriptor)
-        console.log('🚀 ~ file: translator.js:160 ~ Translator ~ translate ~ newCode:', newCode)
         break
       case 'js':
       case 'ts':
